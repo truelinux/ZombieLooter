@@ -1,5 +1,6 @@
 package com.zombielooter;
 
+import cn.nukkit.Player;
 import cn.nukkit.command.PluginCommand;
 import cn.nukkit.event.Listener;
 import cn.nukkit.plugin.PluginBase;
@@ -56,6 +57,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
     private WorldEventManager worldEventManager;
     private KillStreakManager killStreakManager;
     private LeaderboardManager leaderboardManager;
+    private int marqueeTaskId = -1;
 
     @Override
     public void onEnable() {
@@ -63,30 +65,34 @@ public class ZombieLooterX extends PluginBase implements Listener {
         getLogger().info("🧟 ZombieLooterX enabling...");
         getDataFolder().mkdirs();
 
-    try {
-        // ---- Initialize managers (order matters where there are deps) ----
-        uiManager = new UIManager(this);
-        worldEventManager = new WorldEventManager(this);
-        killStreakManager = new KillStreakManager(this);
-        leaderboardManager = new LeaderboardManager(this);
-        guiTextManager     = new GUITextManager(this);
-        lootManager        = new LootManager(this);
-        zombieSpawner      = new ZombieSpawner(this, lootManager);
-        zoneManager        = new ZoneManager(this);
-        xpManager          = new XPManager(this);
+        try {
+            // ---- Initialize managers (order matters where there are deps) ----
+            uiManager        = new UIManager(this);
+            guiTextManager   = new GUITextManager(this);
+            hudManager       = new HUDManager();
 
+            lootManager      = new LootManager(this);
+            zombieSpawner    = new ZombieSpawner(this, lootManager);
+            zoneManager      = new ZoneManager(this);
 
-        economyManager     = new EconomyManager(this);
-        factionManager     = new FactionManager(this);
-        claimManager       = new ClaimManager(this);
-        questManager = new QuestManager(this);
+            xpManager        = new XPManager(this);
+            economyManager   = new EconomyManager(this);
+            factionManager   = new FactionManager(this);
+            claimManager     = new ClaimManager(this);
+            questManager     = new QuestManager(this);
+            marketManager    = new MarketManager(this);
 
-
-    } catch (Exception e) {
-        getLogger().error("Failed to initialize ZombieLooterX!", e);
-        getServer().getPluginManager().disablePlugin(this);
-        return;
-    }
+            bossEventManager     = new BossEventManager(this);
+            infectionManager     = new InfectionManager(this);
+            globalEventManager   = new GlobalEventManager(this);
+            worldEventManager    = new WorldEventManager(this);
+            killStreakManager    = new KillStreakManager(this);
+            leaderboardManager   = new LeaderboardManager(this);
+        } catch (Exception e) {
+            getLogger().error("Failed to initialize ZombieLooterX!", e);
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
 
 
         // ---- Register listeners ----
@@ -112,6 +118,8 @@ public class ZombieLooterX extends PluginBase implements Listener {
         saveResource("loot.yml", false);
         saveResource("quests.yml", false);
         saveResource("bosses.yml", false);
+        saveResource("events.yml", false);
+        saveResource("xp.yml", false);
         saveResource("market.yml", false);
         saveResource("factions.yml", false);
         saveResource("claims.yml", false);
@@ -122,30 +130,80 @@ public class ZombieLooterX extends PluginBase implements Listener {
 
         PlaceholderAPI.INSTANCE.register(new ZombielooterPlaceholderExtension());
 
+        startHotbarMarquee();
+
         getLogger().info("✅ ZombieLooterX enabled. Commands: /zlx, /f, /zmarket, /quest, /boss, /economy");
     }
 
     @Override
     public void onDisable() {
         getLogger().info("💀 ZombieLooterX disabling...");
-    
-    // Save all data before shutdown
-    if (questManager != null) {
-        questManager.saveProgress();
-        getLogger().info("✅ Saved quest progress");
+
+        stopHotbarMarquee();
+
+        // Save all data before shutdown
+        if (questManager != null) {
+            questManager.saveProgress();
+            getLogger().info("✅ Saved quest progress");
+        }
+
+        if (factionManager != null) {
+            factionManager.save();
+            getLogger().info("✅ Saved factions");
+        }
+
+        if (claimManager != null) {
+            claimManager.save();
+            getLogger().info("✅ Saved land claims");
+        }
+
+        if (marketManager != null) {
+            marketManager.save();
+            getLogger().info("✅ Saved marketplace listings");
+        }
+
+        if (xpManager != null) {
+            xpManager.save();
+            getLogger().info("✅ Saved XP data");
+        }
+
+        getLogger().info("💀 ZombieLooterX disabled.");
     }
-    
-    if (factionManager != null) {
-        factionManager.save();
-        getLogger().info("✅ Saved factions");
+
+    private void startHotbarMarquee() {
+        stopHotbarMarquee();
+
+        marqueeTaskId = getServer().getScheduler().scheduleRepeatingTask(this, new cn.nukkit.scheduler.Task() {
+            private final String[] spinner = {"§6«", "§e‹", "§6›", "§e»"};
+            private int frame = 0;
+
+            @Override
+            public void onRun(int currentTick) {
+                int playerCount = getServer().getOnlinePlayers().size();
+                int listingCount = marketManager != null ? marketManager.getListings().size() : 0;
+                int infectionLevel = infectionManager != null ? infectionManager.getInfectionLevel() : 0;
+
+                String prefix = spinner[frame % spinner.length];
+                frame++;
+
+                String message = prefix + " §fPlayers: §a" + playerCount
+                        + " §7| §fListings: §b" + listingCount
+                        + " §7| §fInfection: §c" + infectionLevel + "%";
+
+                for (Player player : getServer().getOnlinePlayers().values()) {
+                    if (player != null && player.isOnline()) {
+                        player.sendActionBar(message);
+                    }
+                }
+            }
+        }, 0, 10);
     }
-    
-    if (xpManager != null) {
-        xpManager.save();
-        getLogger().info("✅ Saved XP data");
-    }
-    
-    getLogger().info("💀 ZombieLooterX disabled.");
+
+    private void stopHotbarMarquee() {
+        if (marqueeTaskId != -1) {
+            getServer().getScheduler().cancelTask(marqueeTaskId);
+            marqueeTaskId = -1;
+        }
     }
 
     // Helper to wire commands safely
