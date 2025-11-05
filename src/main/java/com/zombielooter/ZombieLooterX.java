@@ -174,8 +174,6 @@ public class ZombieLooterX extends PluginBase implements Listener {
         stopHotbarMarquee();
 
         marqueeTaskId = getServer().getScheduler().scheduleRepeatingTask(this, new cn.nukkit.scheduler.Task() {
-            private final String[] spinner = {"§6«", "§e‹", "§6›", "§e»"};
-            private int frame = 0;
 
             @Override
             public void onRun(int currentTick) {
@@ -183,10 +181,8 @@ public class ZombieLooterX extends PluginBase implements Listener {
                 int listingCount = marketManager != null ? marketManager.getListings().size() : 0;
                 int infectionLevel = infectionManager != null ? infectionManager.getInfectionLevel() : 0;
 
-                String prefix = spinner[frame % spinner.length];
-                frame++;
 
-                String message = prefix + " §fPlayers: §a" + playerCount
+                String message = "§l§fPlayers \ue130: §a" + playerCount
                         + " §7| §fListings: §b" + listingCount
                         + " §7| §fInfection: §c" + infectionLevel + "%";
 
@@ -196,7 +192,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
                     }
                 }
             }
-        }, 0, 10);
+        }, 1).getTaskId();
     }
 
     private void stopHotbarMarquee() {
