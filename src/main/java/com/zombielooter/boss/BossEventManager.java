@@ -76,7 +76,7 @@ public class BossEventManager {
         }
 
         try {
-            String type = String.valueOf(data.getOrDefault("type", "zombie"));
+            String type = String.valueOf(data.getOrDefault("type", "minecraft:zombie"));
             String name = String.valueOf(data.getOrDefault("name", "Unknown Boss"));
             int health = ((Number) data.getOrDefault("health", 200)).intValue();
 

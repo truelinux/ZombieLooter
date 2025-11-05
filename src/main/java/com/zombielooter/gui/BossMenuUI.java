@@ -41,7 +41,7 @@ public final class BossMenuUI {
             case 4 -> FeedbackUtil.popup(player, "§7Menu closed.");
             default -> FeedbackUtil.popup(player, "§7Exited.");
         }
-        FeedbackUtil.actionBar(player, "§dBoss menu action executed");
+        player.getLevel().addSound(player, Sound.MOB_SHULKER_AMBIENT);
     }
 }
 

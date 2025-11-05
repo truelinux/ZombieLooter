@@ -42,7 +42,7 @@ public final class MarketMenuUI {
             case 2 -> FeedbackUtil.popup(player, "§7Closed market.");
             default -> FeedbackUtil.popup(player, "§7Exited.");
         }
-        FeedbackUtil.actionBar(player, "§eMarket menu action executed");
+        player.getLevel().addSound(player, Sound.CLICK_OFF_NETHER_WOOD_BUTTON);
     }
 }
 
