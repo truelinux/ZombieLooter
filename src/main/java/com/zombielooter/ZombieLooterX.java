@@ -1,5 +1,6 @@
 package com.zombielooter;
 
+import cn.nukkit.Player;
 import cn.nukkit.command.PluginCommand;
 import cn.nukkit.event.Listener;
 import cn.nukkit.plugin.PluginBase;
@@ -56,6 +57,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
     private WorldEventManager worldEventManager;
     private KillStreakManager killStreakManager;
     private LeaderboardManager leaderboardManager;
+    private int marqueeTaskId = -1;
 
     @Override
     public void onEnable() {
@@ -128,12 +130,16 @@ public class ZombieLooterX extends PluginBase implements Listener {
 
         PlaceholderAPI.INSTANCE.register(new ZombielooterPlaceholderExtension());
 
+        startHotbarMarquee();
+
         getLogger().info("✅ ZombieLooterX enabled. Commands: /zlx, /f, /zmarket, /quest, /boss, /economy");
     }
 
     @Override
     public void onDisable() {
         getLogger().info("💀 ZombieLooterX disabling...");
+
+        stopHotbarMarquee();
 
         // Save all data before shutdown
         if (questManager != null) {
@@ -162,6 +168,42 @@ public class ZombieLooterX extends PluginBase implements Listener {
         }
 
         getLogger().info("💀 ZombieLooterX disabled.");
+    }
+
+    private void startHotbarMarquee() {
+        stopHotbarMarquee();
+
+        marqueeTaskId = getServer().getScheduler().scheduleRepeatingTask(this, new cn.nukkit.scheduler.Task() {
+            private final String[] spinner = {"§6«", "§e‹", "§6›", "§e»"};
+            private int frame = 0;
+
+            @Override
+            public void onRun(int currentTick) {
+                int playerCount = getServer().getOnlinePlayers().size();
+                int listingCount = marketManager != null ? marketManager.getListings().size() : 0;
+                int infectionLevel = infectionManager != null ? infectionManager.getInfectionLevel() : 0;
+
+                String prefix = spinner[frame % spinner.length];
+                frame++;
+
+                String message = prefix + " §fPlayers: §a" + playerCount
+                        + " §7| §fListings: §b" + listingCount
+                        + " §7| §fInfection: §c" + infectionLevel + "%";
+
+                for (Player player : getServer().getOnlinePlayers().values()) {
+                    if (player != null && player.isOnline()) {
+                        player.sendActionBar(message);
+                    }
+                }
+            }
+        }, 0, 10);
+    }
+
+    private void stopHotbarMarquee() {
+        if (marqueeTaskId != -1) {
+            getServer().getScheduler().cancelTask(marqueeTaskId);
+            marqueeTaskId = -1;
+        }
     }
 
     // Helper to wire commands safely
