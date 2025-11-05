@@ -63,30 +63,34 @@ public class ZombieLooterX extends PluginBase implements Listener {
         getLogger().info("🧟 ZombieLooterX enabling...");
         getDataFolder().mkdirs();
 
-    try {
-        // ---- Initialize managers (order matters where there are deps) ----
-        uiManager = new UIManager(this);
-        worldEventManager = new WorldEventManager(this);
-        killStreakManager = new KillStreakManager(this);
-        leaderboardManager = new LeaderboardManager(this);
-        guiTextManager     = new GUITextManager(this);
-        lootManager        = new LootManager(this);
-        zombieSpawner      = new ZombieSpawner(this, lootManager);
-        zoneManager        = new ZoneManager(this);
-        xpManager          = new XPManager(this);
+        try {
+            // ---- Initialize managers (order matters where there are deps) ----
+            uiManager        = new UIManager(this);
+            guiTextManager   = new GUITextManager(this);
+            hudManager       = new HUDManager();
 
+            lootManager      = new LootManager(this);
+            zombieSpawner    = new ZombieSpawner(this, lootManager);
+            zoneManager      = new ZoneManager(this);
 
-        economyManager     = new EconomyManager(this);
-        factionManager     = new FactionManager(this);
-        claimManager       = new ClaimManager(this);
-        questManager = new QuestManager(this);
+            xpManager        = new XPManager(this);
+            economyManager   = new EconomyManager(this);
+            factionManager   = new FactionManager(this);
+            claimManager     = new ClaimManager(this);
+            questManager     = new QuestManager(this);
+            marketManager    = new MarketManager(this);
 
-
-    } catch (Exception e) {
-        getLogger().error("Failed to initialize ZombieLooterX!", e);
-        getServer().getPluginManager().disablePlugin(this);
-        return;
-    }
+            bossEventManager     = new BossEventManager(this);
+            infectionManager     = new InfectionManager(this);
+            globalEventManager   = new GlobalEventManager(this);
+            worldEventManager    = new WorldEventManager(this);
+            killStreakManager    = new KillStreakManager(this);
+            leaderboardManager   = new LeaderboardManager(this);
+        } catch (Exception e) {
+            getLogger().error("Failed to initialize ZombieLooterX!", e);
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
 
 
         // ---- Register listeners ----
@@ -112,6 +116,8 @@ public class ZombieLooterX extends PluginBase implements Listener {
         saveResource("loot.yml", false);
         saveResource("quests.yml", false);
         saveResource("bosses.yml", false);
+        saveResource("events.yml", false);
+        saveResource("xp.yml", false);
         saveResource("market.yml", false);
         saveResource("factions.yml", false);
         saveResource("claims.yml", false);
@@ -128,24 +134,34 @@ public class ZombieLooterX extends PluginBase implements Listener {
     @Override
     public void onDisable() {
         getLogger().info("💀 ZombieLooterX disabling...");
-    
-    // Save all data before shutdown
-    if (questManager != null) {
-        questManager.saveProgress();
-        getLogger().info("✅ Saved quest progress");
-    }
-    
-    if (factionManager != null) {
-        factionManager.save();
-        getLogger().info("✅ Saved factions");
-    }
-    
-    if (xpManager != null) {
-        xpManager.save();
-        getLogger().info("✅ Saved XP data");
-    }
-    
-    getLogger().info("💀 ZombieLooterX disabled.");
+
+        // Save all data before shutdown
+        if (questManager != null) {
+            questManager.saveProgress();
+            getLogger().info("✅ Saved quest progress");
+        }
+
+        if (factionManager != null) {
+            factionManager.save();
+            getLogger().info("✅ Saved factions");
+        }
+
+        if (claimManager != null) {
+            claimManager.save();
+            getLogger().info("✅ Saved land claims");
+        }
+
+        if (marketManager != null) {
+            marketManager.save();
+            getLogger().info("✅ Saved marketplace listings");
+        }
+
+        if (xpManager != null) {
+            xpManager.save();
+            getLogger().info("✅ Saved XP data");
+        }
+
+        getLogger().info("💀 ZombieLooterX disabled.");
     }
 
     // Helper to wire commands safely
