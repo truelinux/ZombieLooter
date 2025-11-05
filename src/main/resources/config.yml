@@ -1,0 +1,11 @@
+# === ZombieLooterX Configuration ===
+# Controls horde spawn behavior, frequency, and size
+
+horde:
+  spawn_chance: 0.07       # 7% chance for a horde to spawn per player check
+  min_distance: 10         # Minimum blocks from player
+  max_distance: 20         # Maximum blocks from player
+  size_min: 3              # Minimum number of zombies per horde
+  size_max: 7              # Maximum number of zombies per horde
+  check_interval: 200      # How often to check for horde spawn (in ticks, 20 = 1 second)
+

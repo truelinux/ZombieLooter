@@ -1,0 +1,7 @@
+bosses:
+  - id: "abomination"
+    name: "The Abomination"
+    entity: "Zombie"
+    health: 300
+    world: "world"
+    pos: { x: 250, y: 65, z: 250 }

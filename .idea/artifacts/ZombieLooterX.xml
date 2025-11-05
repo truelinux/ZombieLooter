@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="ZombieLooterX">
+    <output-path>$PROJECT_DIR$/..</output-path>
+    <root id="archive" name="ZombieLooterX.jar">
+      <element id="module-output" name="ZombieLooter" />
+    </root>
+  </artifact>
+</component>

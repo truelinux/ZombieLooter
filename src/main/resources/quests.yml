@@ -1,0 +1,15 @@
+quests:
+  - id: "zombie_hunter_1"
+    name: "Zombie Hunter I"
+    reward: 100
+    objectives:
+      - type: "kill"
+        mob: "zombie"
+        count: 10
+  - id: "zombie_hunter_2"
+    name: "Zombie Hunter II"
+    reward: 250
+    objectives:
+      - type: "kill"
+        mob: "zombie"
+        count: 25

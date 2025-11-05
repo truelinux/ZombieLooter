@@ -1,0 +1,11 @@
+daily:
+  - id: kill_zombies
+    description: Kill 50 zombies
+    reward: 50
+  - id: sell_items
+    description: Sell 10 items on the market
+    reward: 25
+weekly:
+  - id: survive_purge
+    description: Survive a purge event without dying
+    reward: 100

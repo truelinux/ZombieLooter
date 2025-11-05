@@ -1,0 +1,20 @@
+regions:
+  - name: "SpawnHub"
+    level: "world"
+    p1: { x: -30, y: 0, z: -30 }
+    p2: { x: 30,  y: 255, z: 30 }
+    flags:
+      safe: true
+      pvp: false
+      build: false
+      mobspawn: false
+
+  - name: "Warzone"
+    level: "world"
+    p1: { x: 200, y: 0, z: 200 }
+    p2: { x: 600, y: 255, z: 600 }
+    flags:
+      safe: false
+      pvp: true
+      build: false
+      mobspawn: true

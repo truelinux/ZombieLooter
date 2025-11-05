@@ -1,0 +1,48 @@
+api-version: 2.0.0
+name: ZombieLooterX
+version: 1.1.0
+api: 2.0.0
+main: com.zombielooter.ZombieLooterX
+author: You
+description: Advanced zombie looter PvP gamemode with factions, quests, infection events, bosses, marketplace, and dynamic world systems.
+
+commands:
+  zlx:
+    description: Admin command for ZombieLooterX (reload configs, spawn hordes, etc.)
+    usage: /zlx <reload|spawn [count]>
+    permission: zombielooter.admin
+  f:
+    description: Faction commands (create/join/claim/home/unclaim/etc.)
+    usage: /f <create|disband|join|leave|info|list|sethome|home|claim|unclaim>
+    permission: zombielooter.faction
+  zmarket:
+    description: Player marketplace for trading loot
+    usage: /zmarket <list <itemId> <amount> <price>|buy <index>|view>
+    permission: zlx.market
+  quest:
+    description: Quest and mission tracking
+    usage: /quest <list|start <id>|progress|claim>
+    permission: zombielooter.quest
+  boss:
+    description: Boss event controls (admin or timed)
+    usage: /boss <start <id>|stop|list>
+    permission: zombielooter.boss
+  economy:
+    description: Economy commands (balance, pay)
+    usage: /economy <balance|pay <player> <amount>>
+    aliases: [eco]
+    permission: zombielooter.economy
+
+permissions:
+  zombielooter.admin:
+    default: op
+  zombielooter.faction:
+    default: true
+  zombielooter.quest:
+    default: true
+  zombielooter.boss:
+    default: op
+  zombielooter.economy:
+    default: true
+  zlx.market:
+    default: true

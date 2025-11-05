@@ -1,0 +1,33 @@
+rarityWeights:
+  common: 0.6
+  rare: 0.25
+  epic: 0.1
+  legendary: 0.05
+
+settings:
+  enchantChance: 0.5
+
+loot:
+  common:
+    - item: "minecraft:rotten_flesh"
+      min: 1
+      max: 3
+      chance: 0.9
+
+  rare:
+    - item: "minecraft:iron_ingot"
+      min: 1
+      max: 2
+      chance: 0.3
+
+  epic:
+    - item: "minecraft:diamond"
+      min: 1
+      max: 1
+      chance: 0.15
+
+  legendary:
+    - item: "minecraft:nether_star"
+      min: 1
+      max: 1
+      chance: 0.05

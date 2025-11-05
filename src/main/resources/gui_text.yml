@@ -1,0 +1,38 @@
+gui:
+  boss:
+    title: "Boss Arena — Nightfall"
+    description: "The ground trembles beneath your feet.\nFace terrifying bosses and earn epic rewards."
+    buttons:
+      - "View Boss List"
+      - "Join Ongoing Fight"
+      - "View Rewards"
+      - "Leave Arena"
+      - "Close Menu"
+
+  faction:
+    title: "Faction Menu"
+    description: "Manage your faction, claim land, and recruit allies."
+    buttons:
+      - "Faction Info"
+      - "Claim Land (Preview)"
+      - "Confirm Claim"
+      - "Unclaim Land"
+      - "Leave Faction"
+      - "Disband Faction"
+
+  market:
+    title: "Market Exchange"
+    description: "Buy, sell, and trade items with other survivors.\nEarn coins by listing loot or find deals fast."
+    buttons:
+      - "View Listings"
+      - "Sell Help"
+      - "Close Market"
+
+  quest:
+    title: "Quest Board"
+    description: "Take on challenges to earn coins and glory.\nTrack your progress or claim rewards here."
+    buttons:
+      - "Quest List"
+      - "Progress"
+      - "Claim Rewards"
+      - "Quest Help"

@@ -1,0 +1,7 @@
+# XP progression and level rewards
+base: 100        # XP needed for level 1
+growth: 1.5      # XP multiplier per level
+rewards:
+  2: 10         # coins awarded at level 2
+  3: 20
+  4: 30

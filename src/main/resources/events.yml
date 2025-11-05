@@ -1,0 +1,23 @@
+events:
+  raids:
+    enabled: true
+    spawn_chance: 0.02
+    spawn_count:
+      min: 5
+      max: 10
+  meteor:
+    enabled: true
+    spawn_chance: 0.01
+    spawn_radius: 100
+    loot:
+      - item: minecraft:diamond
+        min: 1
+        max: 3
+        chance: 0.2
+      - item: minecraft:iron_ingot
+        min: 2
+        max: 6
+        chance: 0.5
+  infection:
+    enabled: true
+    outbreak_chance: 0.005
