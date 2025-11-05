@@ -37,3 +37,11 @@ build/
 
 ### Mac OS ###
 .DS_Store
+/.idea/
+/out/
+/update.txt
+/project_dump.txt
+/Example
+/compile.py
+/BaseGUI.java
+/apply.py
