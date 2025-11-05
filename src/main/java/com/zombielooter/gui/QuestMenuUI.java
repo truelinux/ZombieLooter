@@ -39,7 +39,7 @@ public final class QuestMenuUI {
             case 3 -> player.getServer().executeCommand(player, "quest help");
             default -> FeedbackUtil.popup(player, "§7Menu closed.");
         }
-        FeedbackUtil.actionBar(player, "§aQuest menu action executed");
+        player.getLevel().addSound(player, Sound.CLICK_OFF_NETHER_WOOD_BUTTON);
     }
 }
 
