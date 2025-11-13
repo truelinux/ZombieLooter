@@ -11,6 +11,7 @@ import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.player.PlayerMoveEvent;
 import com.zombielooter.ZombieLooterX;
+import com.zombielooter.factions.Faction;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +24,7 @@ public class PvPListener implements Listener {
     private int combatTagSeconds = 20;
 
     private final Map<UUID, String> lastRegion = new HashMap<>();
+    private final Map<UUID, String> lastFactionClaim = new HashMap<>(); // To track entering/leaving faction land
 
     public PvPListener(ZombieLooterX plugin, ZoneManager zones) {
         this.plugin = plugin;
@@ -85,23 +87,40 @@ public class PvPListener implements Listener {
         }
     }
 
-    // Titles when entering or leaving regions
     @EventHandler(ignoreCancelled = true)
     public void onMove(PlayerMoveEvent event) {
         Player p = event.getPlayer();
-        String currentName = null;
+        // Optimization: only run checks if the player has moved to a new chunk
+        if (event.getFrom().getChunkX() == event.getTo().getChunkX() && event.getFrom().getChunkZ() == event.getTo().getChunkZ()) {
+            return;
+        }
+
+        // --- Region Title Logic ---
+        String currentRegionName = null;
         Region r = zones.getRegionAt(p.getLocation());
-        if (r != null) currentName = r.getName();
+        if (r != null) currentRegionName = r.getName();
 
         String last = lastRegion.get(p.getUniqueId());
-        if ((last == null && currentName != null) || (last != null && !last.equals(currentName))) {
-            lastRegion.put(p.getUniqueId(), currentName);
+        if ((last == null && currentRegionName != null) || (last != null && !last.equals(currentRegionName))) {
+            lastRegion.put(p.getUniqueId(), currentRegionName);
             if (r == null) {
                 p.sendTitle("§7Wilderness", "§8Build: allowed  •  PvP: depends", 10, 40, 10);
             } else {
                 String pvp = r.getFlag("pvp", false) ? "§cON" : "§aOFF";
                 String build = r.getFlag("build", true) ? "§aallowed" : "§cdenied";
                 p.sendTitle("§6" + r.getName(), "§ePvP: " + pvp + " §7• §eBuild: " + build, 10, 40, 10);
+            }
+        }
+
+        // --- Faction Raid Warning Logic ---
+        Faction currentFaction = plugin.getClaimManager().getFactionForChunk(p.getChunkX(), p.getChunkZ());
+        String currentFactionName = (currentFaction != null) ? currentFaction.getName() : "Wilderness";
+        String lastFaction = lastFactionClaim.getOrDefault(p.getUniqueId(), "Wilderness");
+
+        if (!currentFactionName.equals(lastFaction)) {
+            lastFactionClaim.put(p.getUniqueId(), currentFactionName);
+            if (currentFaction != null && plugin.getRaidManager().isFactionRaidable(currentFaction.getName())) {
+                p.sendTitle("§c§lDANGER", "§eEntering raidable territory of " + currentFaction.getName(), 10, 60, 20);
             }
         }
     }

@@ -5,26 +5,26 @@ import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandExecutor;
 import cn.nukkit.command.CommandSender;
 import com.zombielooter.ZombieLooterX;
+import com.zombielooter.gui.GUITextManager;
 import com.zombielooter.quests.*;
-import cn.nukkit.Player;
 import com.zombielooter.gui.QuestMenuUI;
-import com.zombielooter.gui.FactionMenuUI;
 
 import java.util.Map;
-
 
 public class QuestCommand implements CommandExecutor {
 
     private final ZombieLooterX plugin;
+    private final GUITextManager textManager;
 
     public QuestCommand(ZombieLooterX plugin) {
         this.plugin = plugin;
+        this.textManager = plugin.getGUITextManager();
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage("§cOnly players can use quest commands.");
+            sender.sendMessage(textManager.getText("commands.quest.only_players", "§cOnly players can use quest commands."));
             return true;
         }
         Player player = (Player) sender;
@@ -33,7 +33,6 @@ public class QuestCommand implements CommandExecutor {
             QuestMenuUI.openMainMenu(plugin, player);
             return true;
         }
-
 
         switch (args[0].toLowerCase()) {
             case "list":
@@ -44,16 +43,16 @@ public class QuestCommand implements CommandExecutor {
 
             case "start":
                 if (args.length < 2) {
-                    player.sendMessage("§eUsage: /quest start <id>");
+                    player.sendMessage(textManager.getText("commands.quest.usage_start", "§eUsage: /quest start <id>"));
                     return true;
                 }
                 Quest quest = plugin.getQuestManager().getQuest(args[1]);
                 if (quest == null) {
-                    player.sendMessage("§cQuest not found.");
+                    player.sendMessage(textManager.getText("commands.quest.quest_not_found", "§cQuest not found."));
                     return true;
                 }
                 plugin.getQuestManager().getProgress(player, quest.getId());
-                sender.sendMessage("§aStarted quest: §e" + quest.getName());
+                sender.sendMessage(textManager.getText("commands.quest.started_quest_prefix", "§aStarted quest: §e") + quest.getName());
                 break;
 
             case "progress":
@@ -61,11 +60,11 @@ public class QuestCommand implements CommandExecutor {
                     .getPlayerProgress(player.getUniqueId());
 
                 if (playerQuests.isEmpty()) {
-                    player.sendMessage("§7You have no active quests. Use §e/quest list§7 to see available quests.");
+                    player.sendMessage(textManager.getText("commands.quest.no_active_quests", "§7You have no active quests. Use §e/quest list§7 to see available quests."));
                     return true;
                 }
 
-                player.sendMessage("§6=== Your Active Quests ===");
+                player.sendMessage(textManager.getText("commands.quest.active_quests_header", "§6=== Your Active Quests ==="));
                 for (Map.Entry<String, QuestProgress> entry : playerQuests.entrySet()) {
                     Quest q = plugin.getQuestManager().getQuest(entry.getKey());
                     if (q == null) continue;
@@ -86,8 +85,8 @@ public class QuestCommand implements CommandExecutor {
     }
 
     private void sendHelp(Player p) {
-        p.sendMessage("§6==== §lQuest Help §r§6====");
-        p.sendMessage("§7- Start earning awards by completing Quests.");
-        p.sendMessage("§7- Quests refresh daily - use /quest");
+        p.sendMessage(textManager.getText("commands.quest.help_header", "§6==== §lQuest Help §r§6===="));
+        p.sendMessage(textManager.getText("commands.quest.help_line1", "§7- Start earning awards by completing Quests."));
+        p.sendMessage(textManager.getText("commands.quest.help_line2", "§7- Quests refresh daily - use /quest"));
     }
 }

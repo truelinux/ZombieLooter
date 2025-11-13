@@ -1,7 +1,19 @@
-# XP progression and level rewards
-base: 100        # XP needed for level 1
-growth: 1.5      # XP multiplier per level
-rewards:
-  2: 10         # coins awarded at level 2
-  3: 20
-  4: 30
+# Configuration for Player XP and Leveling
+
+# This section defines the total XP required to reach a certain level.
+# The keys MUST be strings.
+level-requirements:
+  "1": 0
+  "2": 1000
+  "3": 2500
+  "4": 5000
+  "5": 8000
+  "6": 12000
+  "7": 17000
+  "8": 23000
+  "9": 30000
+  "10": 40000
+
+# Player XP data will be stored below this line automatically.
+# Example:
+# 1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d: 12345

@@ -1,0 +1,46 @@
+# Defines multiple NPC vendors, their appearance, limits, and items.
+
+vendors:
+  arms_dealer:
+    name: "§l§cArms Dealer"
+    # Skin name used by the server to set the NPC's appearance.
+    skin: "arms_dealer_skin"
+    # Max number of items a player can buy/sell from this vendor per day.
+    daily-buy-limit: 250
+    daily-sell-limit: 500
+    items:
+      ammo_pistol:
+        id: "minecraft:iron_nugget"
+        name: "§fPistol Ammo"
+        sellPrice: 5
+        buyPrice: 8
+      ammo_rifle:
+        id: "minecraft:gold_nugget"
+        name: "§fRifle Ammo"
+        sellPrice: 12
+        buyPrice: 18
+      military_grade_alloy:
+        id: "minecraft:netherite_ingot"
+        name: "§5Military-Grade Alloy"
+        buyPrice: 1500
+
+  scavenger:
+    name: "§l§eScavenger"
+    skin: "scavenger_skin"
+    daily-buy-limit: 100
+    daily-sell-limit: 1000
+    items:
+      medkit:
+        id: "minecraft:apple"
+        name: "§cMedkit"
+        sellPrice: 75
+        buyPrice: 100
+      zombie_eye:
+        id: "minecraft:fermented_spider_eye"
+        name: "§aMutated Eyeball"
+        sellPrice: 15
+      scrap_metal:
+        id: "minecraft:iron_ingot"
+        name: "§7Scrap Metal"
+        sellPrice: 25
+        buyPrice: 40

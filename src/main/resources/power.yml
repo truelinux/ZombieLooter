@@ -1,1 +1,33 @@
-# Faction power values
+# Configuration for Faction Power
+
+# The starting power for a newly created faction.
+default-power: 10
+
+# The maximum power a faction can accumulate.
+max-power: 100
+
+# The amount of power required for each chunk a faction claims.
+# For example, if set to 5, a faction needs 50 power to hold 10 chunks.
+power-per-claim: 5
+
+# Power changes from player interactions
+player-interactions:
+  # Power lost when a faction member dies.
+  on-death: -3
+  # Power gained by the killer's faction when they kill a member of another faction.
+  on-kill: 2
+
+# Power changes from PvE events
+pve-events:
+  # Power gained by the faction of the player who lands the killing blow on a boss.
+  on-boss-kill: 15
+
+# --- Faction Raiding ---
+raiding:
+  # A faction becomes raidable if its power drops below the total power of its claimed land.
+  # For example, with power-per-claim at 5, a faction with 10 chunks (50 power value) is raidable if its power is 49 or less.
+  # You can add a buffer here. A value of -10 means a faction is safe until its power is 10 below its land value.
+  raidable-power-buffer: -10
+
+  # How long a faction remains raidable after its power drops too low (in minutes).
+  raid-window-minutes: 60

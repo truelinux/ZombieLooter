@@ -1,11 +1,12 @@
 package com.zombielooter;
 
+import cn.nukkit.Player;
+import cn.nukkit.entity.Entity;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.Level;
 import cn.nukkit.utils.Config;
-import cn.nukkit.entity.Entity;
-import cn.nukkit.Player;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -15,43 +16,71 @@ public class LootManager {
     private final ZombieLooterX plugin;
     private final Config lootConfig;
     private final Random random = new Random();
+    private final List<LootItem> lootTable = new ArrayList<>();
+
+    private static class LootItem {
+        final String itemId;
+        final int minAmount;
+        final int maxAmount;
+        final double chance; // 0.0 to 1.0
+
+        LootItem(String id, int min, int max, double chance) {
+            this.itemId = id;
+            this.minAmount = min;
+            this.maxAmount = max;
+            this.chance = chance;
+        }
+    }
 
     public LootManager(ZombieLooterX plugin) {
         this.plugin = plugin;
-        this.lootConfig = new Config(plugin.getDataFolder() + "/zombie_loot.yml", Config.YAML);
+        this.lootConfig = new Config(plugin.getDataFolder() + "/loot.yml", Config.YAML);
+        loadLootTable();
+    }
+
+    private void loadLootTable() {
+        lootTable.clear();
+        // ** THE FIX IS HERE **
+        // Add a null check to prevent crashing if the config is empty or malformed.
+        List<Map<String, Object>> items = lootConfig.get("zombie_loot", new ArrayList<>());
+        if (items == null || items.isEmpty()) {
+            plugin.getLogger().warning("The 'zombie_loot' section in loot.yml is missing or empty. No loot will be dropped.");
+            return;
+        }
+
+        for (Map<String, Object> itemData : items) {
+            try {
+                lootTable.add(new LootItem(
+                    (String) itemData.get("id"),
+                    (int) itemData.get("min_amount"),
+                    (int) itemData.get("max_amount"),
+                    ((Number) itemData.get("chance")).doubleValue()
+                ));
+            } catch (Exception e) {
+                plugin.getLogger().error("Failed to load an item from loot.yml. Please check formatting.", e);
+            }
+        }
     }
 
     public void dropLoot(Entity entity) {
-        if (entity == null || entity.getLevel() == null) return;
         Level level = entity.getLevel();
-
-        String rarity = getRandomRarity();
-        List<Map<String, Object>> lootList = (List<Map<String, Object>>) lootConfig.getList("loot." + rarity);
-
-        if (lootList == null || lootList.isEmpty()) return;
-
-        for (Map<String, Object> loot : lootList) {
-            double chance = ((Number) loot.getOrDefault("chance", 0.0)).doubleValue();
-            if (random.nextDouble() > chance) continue;
-
-            String itemId = (String) loot.getOrDefault("item", "minecraft:rotten_flesh");
-            int min = ((Number) loot.getOrDefault("min", 1)).intValue();
-            int max = ((Number) loot.getOrDefault("max", 1)).intValue();
-            int amount = min + random.nextInt(Math.max(1, max - min + 1));
-
-            Item item = Item.get(itemId);
-            if (item == null) continue;
-            item.setCount(amount);
-
-            level.dropItem(entity, item);
+        Player killer = null;
+        if (entity.getLastDamageCause() instanceof cn.nukkit.event.entity.EntityDamageByEntityEvent) {
+            Entity damager = ((cn.nukkit.event.entity.EntityDamageByEntityEvent) entity.getLastDamageCause()).getDamager();
+            if (damager instanceof Player) {
+                killer = (Player) damager;
+            }
         }
 
-        plugin.getLogger().info("💀 Dropped loot for entity: " + entity.getName());
-    }
+        double lootBoost = (killer != null) ? plugin.getTerritoryBuffManager().getLootBoost(killer) : 0;
 
-    private String getRandomRarity() {
-        double roll = random.nextDouble();
-        if (roll <= 0.1) return "rare";
-        return "common";
+        for (LootItem lootItem : lootTable) {
+            double chance = lootItem.chance * (1 + (lootBoost / 100.0));
+            if (random.nextDouble() < chance) {
+                int amount = lootItem.minAmount + random.nextInt(lootItem.maxAmount - lootItem.minAmount + 1);
+                Item item = Item.get(lootItem.itemId, 0, amount);
+                level.dropItem(entity.getLocation(), item);
+            }
+        }
     }
 }

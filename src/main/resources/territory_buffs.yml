@@ -1,0 +1,27 @@
+# Configuration for Faction Territory Buffs
+
+# Buffs are granted in tiers. A faction receives the buffs from the highest tier they qualify for.
+# Tiers are based on the number of chunks a faction has claimed.
+# The keys MUST be strings.
+
+tiers:
+  # Tier 1: For factions with at least 5 chunks
+  "5":
+    xp-boost-percent: 2.5  # A 2.5% increase in all XP gained
+    loot-boost-percent: 1.0 # A 1.0% increase in the chance of finding loot
+    passive-income-coins: 50 # 50 coins per interval
+
+  # Tier 2: For factions with at least 15 chunks
+  "15":
+    xp-boost-percent: 5.0
+    loot-boost-percent: 2.5
+    passive-income-coins: 150
+
+  # Tier 3: For factions with at least 30 chunks
+  "30":
+    xp-boost-percent: 10.0
+    loot-boost-percent: 5.0
+    passive-income-coins: 400
+
+# How often passive income is granted to factions (in minutes).
+income-interval-minutes: 30

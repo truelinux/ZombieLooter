@@ -9,6 +9,7 @@ import cn.nukkit.entity.mob.EntityZombie;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.entity.EntityDeathEvent;
+import cn.nukkit.item.Item;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.Location;
 import cn.nukkit.level.ParticleEffect;
@@ -207,9 +208,9 @@ public class ZombieSpawner implements Listener {
         Entity entity = event.getEntity();
 
         // Only handle zombies
-        if (!(entity instanceof EntityZombie)) return;
-
+        if (!(entity.getIdentifier().equals(Entity.ZOMBIE))) return;
         try {
+            event.setDrops(new Item[]{Item.AIR});
             lootManager.dropLoot(entity);
         } catch (Exception e) {
             plugin.getLogger().error("Failed to drop loot for zombie death: " + e.getMessage());

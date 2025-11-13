@@ -6,136 +6,105 @@ import cn.nukkit.utils.Config;
 import com.zombielooter.ZombieLooterX;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class FactionManager {
-    private final ZombieLooterX plugin;
-    private final Map<String, Faction> factions = new HashMap<>();
-    private Config config;
 
-    public FactionManager(ZombieLooterX plugin){
+    private final ZombieLooterX plugin;
+    private final Config factionsConfig;
+    private final Map<String, Faction> factions = new HashMap<>();
+
+    public FactionManager(ZombieLooterX plugin) {
         this.plugin = plugin;
+        this.factionsConfig = new Config(new File(plugin.getDataFolder(), "factions.yml"), Config.YAML);
         load();
     }
 
-    @SuppressWarnings("unchecked")
-    public void load(){
-        File f = new File(plugin.getDataFolder(), "factions.yml");
-        if (!f.exists()) plugin.saveResource("factions.yml", false);
-        config = new Config(f, Config.YAML);
-        factions.clear();
+    private void load() {
+        for (String name : factionsConfig.getKeys(false)) {
+            try {
+                UUID leader = UUID.fromString(factionsConfig.getString(name + ".leader"));
+                Faction faction = new Faction(name, leader);
 
-        Map<String,Object> all = config.getAll();
-        for (String key : all.keySet()){
-            Object raw = all.get(key);
-            if (!(raw instanceof Map)) continue;
-            Map<String,Object> map = (Map<String,Object>) raw;
-            UUID leader = UUID.fromString(String.valueOf(map.get("leader")));
-            Faction fac = new Faction(key, leader);
-
-            // members
-            List<String> members = (List<String>) map.get("members");
-            if (members != null) for (String id : members) fac.addMember(UUID.fromString(id));
-
-            // NEW: Load pending invites
-            List<String> invites = (List<String>) map.get("invites");
-            if (invites != null) {
-                for (String id : invites) {
-                    try {
-                        fac.invite(UUID.fromString(id));
-                    } catch (IllegalArgumentException e) {
-                        plugin.getLogger().warning("Invalid invite UUID in faction " + key + ": " + id);
-                    }
+                List<String> memberUUIDs = factionsConfig.getStringList(name + ".members");
+                for (String uuidStr : memberUUIDs) {
+                    faction.addMember(UUID.fromString(uuidStr));
                 }
-            }
 
-            // home
-            Map<String,Object> home = (Map<String,Object>) map.get("home");
-            if (home != null) {
-                String level = String.valueOf(home.get("level"));
-                double x = toDouble(home.get("x")), y = toDouble(home.get("y")), z = toDouble(home.get("z"));
-                float yaw = (float) toDouble(home.getOrDefault("yaw", 0));
-                float pitch = (float) toDouble(home.getOrDefault("pitch", 0));
-                if (plugin.getServer().getLevelByName(level) != null) {
-                    fac.setHome(new Location(x, y, z, yaw, pitch, plugin.getServer().getLevelByName(level)));
+                if (factionsConfig.exists(name + ".home")) {
+                    String[] homeData = factionsConfig.getString(name + ".home").split(":");
+                    faction.setHome(new Location(
+                        Double.parseDouble(homeData[1]),
+                        Double.parseDouble(homeData[2]),
+                        Double.parseDouble(homeData[3]),
+                        plugin.getServer().getLevelByName(homeData[0])
+                    ));
                 }
+                faction.setPower(factionsConfig.getInt(name + ".power", 0));
+                faction.setBankBalance(factionsConfig.getDouble(name + ".bank", 0)); // Load bank balance
+
+                factions.put(name, faction);
+            } catch (Exception e) {
+                plugin.getLogger().error("Failed to load faction: " + name, e);
             }
-
-            // power
-            int power = ((Number) map.getOrDefault("power", 10)).intValue();
-            fac.setPower(power);
-
-            factions.put(key.toLowerCase(), fac);
         }
-        plugin.getLogger().info("Loaded "+factions.size()+" factions.");
     }
 
-    public void save(){
-    try {
-        Map<String,Object> out = new LinkedHashMap<>();
-        for (Faction f : factions.values()){
-            Map<String,Object> m = new LinkedHashMap<>();
-            m.put("leader", f.getLeader().toString());
-            
-            List<String> memberList = new ArrayList<>();
-            f.getMembers().forEach(u -> memberList.add(u.toString()));
-            m.put("members", memberList);
-            
-            // NEW: Save pending invites
-            List<String> inviteList = new ArrayList<>();
-            f.getPendingInvites().forEach(u -> inviteList.add(u.toString()));
-            if (!inviteList.isEmpty()) {
-                m.put("invites", inviteList);
-            }
-            
-            if (f.getHome() != null) {
-                Location h = f.getHome();
-                Map<String,Object> hm = new LinkedHashMap<>();
-                hm.put("level", h.getLevel().getFolderName());
-                hm.put("x", h.getX()); hm.put("y", h.getY()); hm.put("z", h.getZ());
-                hm.put("yaw", h.getYaw()); hm.put("pitch", h.getPitch());
-                m.put("home", hm);
-            }
-            m.put("power", f.getPower());
-            out.put(f.getName(), m);
-        }
-        config.setAll((LinkedHashMap<String, Object>) out);
-        config.save();
-    } catch (Exception e) {
-        plugin.getLogger().error("Failed to save factions!", e);
-    }
-}
+    public void save() {
+        for (Faction faction : factions.values()) {
+            String name = faction.getName();
+            factionsConfig.set(name + ".leader", faction.getLeader().toString());
 
-    public boolean createFaction(Player leader, String name){
-        String key = name.toLowerCase();
-        if (factions.containsKey(key)) return false;
-        Faction f = new Faction(name, leader.getUniqueId());
-        factions.put(key, f);
+            List<String> memberUUIDs = new ArrayList<>();
+            for (UUID uuid : faction.getMembers()) {
+                memberUUIDs.add(uuid.toString());
+            }
+            factionsConfig.set(name + ".members", memberUUIDs);
+
+            if (faction.getHome() != null) {
+                Location home = faction.getHome();
+                factionsConfig.set(name + ".home", home.getLevel().getName() + ":" + home.getX() + ":" + home.getY() + ":" + home.getZ());
+            }
+            factionsConfig.set(name + ".power", faction.getPower());
+            factionsConfig.set(name + ".bank", faction.getBankBalance()); // Save bank balance
+        }
+        factionsConfig.save();
+    }
+
+    public boolean createFaction(Player player, String name) {
+        if (factions.containsKey(name)) {
+            return false;
+        }
+        Faction faction = new Faction(name, player.getUniqueId());
+        factions.put(name, faction);
         save();
         return true;
     }
 
-    public Faction getFaction(String name){ return factions.get(name.toLowerCase()); }
+    public Faction getFaction(String name) {
+        return factions.get(name);
+    }
 
-    public Faction getFactionByPlayer(UUID id){
-        for (Faction f : factions.values()) if (f.isMember(id)) return f;
+    public Faction getFactionByPlayer(UUID uuid) {
+        for (Faction faction : factions.values()) {
+            if (faction.isMember(uuid)) {
+                return faction;
+            }
+        }
         return null;
     }
 
-    public void disband(String name){
-        factions.remove(name.toLowerCase());
+    public void disband(String name) {
+        factions.remove(name);
+        factionsConfig.remove(name);
         save();
     }
 
-    public void addMember(String name, Player p){
-        Faction f = getFaction(name);
-        if (f != null){ f.addMember(p.getUniqueId()); save(); }
-    }
-
-    public Collection<Faction> getFactions(){ return factions.values(); }
-
-    private double toDouble(Object o) {
-        if (o instanceof Number) return ((Number) o).doubleValue();
-        return Double.parseDouble(String.valueOf(o));
+    public List<Faction> getFactions() {
+        return new ArrayList<>(factions.values());
     }
 }

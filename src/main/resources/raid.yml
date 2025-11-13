@@ -1,3 +1,17 @@
-raid_window:
-  start: "18:00"
-  end: "22:00"
+# Configuration for Physical Faction Raiding
+
+# The duration an attacker must defend the Raid Banner to capture a chunk (in seconds).
+banner-defense-duration: 300 # 5 minutes
+
+# The item ID for the Raid Banner.
+banner-item-id: "minecraft:banner"
+
+# The name and lore for the Raid Banner item.
+banner-item-name: "§c§lRaid Banner"
+banner-item-lore:
+  - "§7Place this in the claimed territory"
+  - "§7of a raidable faction to begin"
+  - "§7an overclaim attempt."
+
+# The cost for a faction leader to obtain a raid banner via /f raid banner.
+banner-cost: 5000

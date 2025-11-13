@@ -2,19 +2,29 @@ package com.zombielooter;
 
 import cn.nukkit.Player;
 import cn.nukkit.command.PluginCommand;
+import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
+import cn.nukkit.event.level.ChunkLoadEvent;
+import cn.nukkit.event.level.ChunkUnloadEvent;
 import cn.nukkit.plugin.PluginBase;
+import cn.nukkit.registry.Registries;
+import cn.nukkit.registry.RegisterException;
 
 import com.zombielooter.boss.BossEventManager;
 import com.zombielooter.commands.*;
 import com.zombielooter.economy.EconomyManager;
+import com.zombielooter.economy.VendorManager;
 import com.zombielooter.events.GlobalEventManager;
 import com.zombielooter.events.InfectionManager;
-import com.zombielooter.factions.ClaimManager;
-import com.zombielooter.factions.FactionManager;
+import com.zombielooter.events.PlayerDeathListener;
+import com.zombielooter.events.PlayerEvents;
+import com.zombielooter.factions.*;
 import com.zombielooter.gui.GUIFormListener;
 import com.zombielooter.gui.GUITextManager;
 import com.zombielooter.market.MarketManager;
+import com.zombielooter.npc.NPCListener;
+import com.zombielooter.npc.NPCManager;
+import com.zombielooter.npc.VendorNPC;
 import com.zombielooter.placeholder.ZombielooterPlaceholderExtension;
 import com.zombielooter.quests.QuestManager;
 import com.zombielooter.security.AntiCheatBasic;
@@ -42,13 +52,18 @@ public class ZombieLooterX extends PluginBase implements Listener {
     // Systems / features
     private EconomyManager economyManager;
     private FactionManager factionManager;
-    private ClaimManager claimManager;          // ✅ added back (chunk/claim handling)
+    private ClaimManager claimManager;
     private QuestManager questManager;
     private BossEventManager bossEventManager;
     private GlobalEventManager globalEventManager;
     private InfectionManager infectionManager;
     private MarketManager marketManager;
     private HUDManager hudManager;
+    private VendorManager vendorManager;
+    private NPCManager npcManager;
+    private PowerManager powerManager;
+    private RaidManager raidManager;
+    private TerritoryBuffManager territoryBuffManager;
 
     // Additional systems added for a more immersive experience
     private GUITextManager guiTextManager;
@@ -58,6 +73,15 @@ public class ZombieLooterX extends PluginBase implements Listener {
     private KillStreakManager killStreakManager;
     private LeaderboardManager leaderboardManager;
     private int marqueeTaskId = -1;
+
+    @Override
+    public void onLoad() {
+        try {
+             Registries.ENTITY.registerCustomEntity(this, VendorNPC.class);
+         } catch (RegisterException e) {
+             throw new RuntimeException(e);
+         }
+    }
 
     @Override
     public void onEnable() {
@@ -77,6 +101,11 @@ public class ZombieLooterX extends PluginBase implements Listener {
 
             xpManager        = new XPManager(this);
             economyManager   = new EconomyManager(this);
+            vendorManager    = new VendorManager(this, economyManager);
+            npcManager       = new NPCManager(this);
+            powerManager     = new PowerManager(this);
+            raidManager      = new RaidManager(this);
+            territoryBuffManager = new TerritoryBuffManager(this);
             factionManager   = new FactionManager(this);
             claimManager     = new ClaimManager(this);
             questManager     = new QuestManager(this);
@@ -94,7 +123,6 @@ public class ZombieLooterX extends PluginBase implements Listener {
             return;
         }
 
-
         // ---- Register listeners ----
         getServer().getPluginManager().registerEvents(this, this);
         getServer().getPluginManager().registerEvents(new GUIFormListener(this), this);
@@ -102,6 +130,10 @@ public class ZombieLooterX extends PluginBase implements Listener {
         getServer().getPluginManager().registerEvents(new PvPListener(this, zoneManager), this);
         getServer().getPluginManager().registerEvents(new AntiCheatBasic(this), this);
         getServer().getPluginManager().registerEvents(new AntiExploitListener(this, getZoneManager()), this);
+        getServer().getPluginManager().registerEvents(new PlayerEvents(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerDeathListener(this), this);
+        getServer().getPluginManager().registerEvents(new NPCListener(this, npcManager), this);
+        getServer().getPluginManager().registerEvents(new RaidListener(this), this);
 
         // ---- Register commands via setExecutor() ----
         tryRegisterCommand("zlx",     new ZombieCommand(this));
@@ -110,6 +142,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
         tryRegisterCommand("quest",   new QuestCommand(this));
         tryRegisterCommand("boss",    new BossCommand(this));
         tryRegisterCommand("economy", new EconomyCommand(this));
+        tryRegisterCommand("vendor",  new VendorCommand(this));
 
         // ---- Save default resources if missing ----
         saveResource("config.yml", false);
@@ -126,13 +159,25 @@ public class ZombieLooterX extends PluginBase implements Listener {
         saveResource("economy.yml", false);
         saveResource("power.yml", false);
         saveResource("raid.yml", false);
+        saveResource("vendors.yml", false);
+        saveResource("territory_buffs.yml", false);
 
 
         PlaceholderAPI.INSTANCE.register(new ZombielooterPlaceholderExtension());
 
         startHotbarMarquee();
 
-        getLogger().info("✅ ZombieLooterX enabled. Commands: /zlx, /f, /zmarket, /quest, /boss, /economy");
+        getLogger().info("✅ ZombieLooterX enabled. Commands: /zlx, /f, /zmarket, /quest, /boss, /economy, /vendor");
+    }
+
+    @EventHandler
+    public void onChunkLoad(ChunkLoadEvent event) {
+        npcManager.onChunkLoad(event.getChunk());
+    }
+
+    @EventHandler
+    public void onChunkUnload(ChunkUnloadEvent event) {
+        npcManager.onChunkUnload(event.getChunk());
     }
 
     @Override
@@ -223,13 +268,18 @@ public class ZombieLooterX extends PluginBase implements Listener {
     public ZoneManager getZoneManager()               { return zoneManager; }
     public EconomyManager getEconomyManager()         { return economyManager; }
     public FactionManager getFactionManager()         { return factionManager; }
-    public ClaimManager getClaimManager()             { return claimManager; }     // ✅ added getter
+    public ClaimManager getClaimManager()             { return claimManager; }
     public QuestManager getQuestManager()             { return questManager; }
     public BossEventManager getBossEventManager()     { return bossEventManager; }
     public GlobalEventManager getGlobalEventManager() { return globalEventManager; }
     public InfectionManager getInfectionManager()     { return infectionManager; }
     public MarketManager getMarketManager()           { return marketManager; }
     public HUDManager getHudManager()                 { return hudManager; }
+    public VendorManager getVendorManager()           { return vendorManager; }
+    public NPCManager getNpcManager()                 { return npcManager; }
+    public PowerManager getPowerManager()             { return powerManager; }
+    public RaidManager getRaidManager()               { return raidManager; }
+    public TerritoryBuffManager getTerritoryBuffManager() { return territoryBuffManager; }
 
     // Getters for newly added managers
     public UIManager getUIManager()                  { return uiManager; }

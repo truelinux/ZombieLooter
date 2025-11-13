@@ -3,129 +3,108 @@ package com.zombielooter.xp;
 import cn.nukkit.Player;
 import cn.nukkit.utils.Config;
 import com.zombielooter.ZombieLooterX;
-import java.io.File;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
-/**
- * XPManager keeps track of experience points and levels for each player.
- * XP thresholds and level rewards are defined in xp.yml.  Data is saved
- * asynchronously to xp_data.yml to avoid blocking the server thread.
- */
+import java.io.File;
+import java.util.*;
+
 public class XPManager {
+
     private final ZombieLooterX plugin;
-    private final Map<UUID, Integer> xp = new HashMap<>();
-    private final Map<UUID, Integer> level = new HashMap<>();
-    private Config dataConfig;
+    private final Config xpConfig;
+    private final Map<UUID, Integer> playerXP = new HashMap<>();
+    // Use a TreeMap for level requirements to keep them sorted
+    private final NavigableMap<Integer, Integer> levelUpXP = new TreeMap<>();
 
     public XPManager(ZombieLooterX plugin) {
         this.plugin = plugin;
-        load();
+        this.xpConfig = new Config(new File(plugin.getDataFolder(), "xp.yml"), Config.YAML);
+        loadXPData();
+        loadLevelUpRequirements();
     }
 
-    /**
-     * Load XP and level data from xp_data.yml asynchronously.
-     */
-    public void load() {
-        CompletableFuture.runAsync(() -> {
+    private void loadXPData() {
+        // ** THE FIX IS HERE **
+        // Gracefully handle both String and Integer keys from the config.
+        for (Map.Entry<String, Object> entry : xpConfig.getAll().entrySet()) {
             try {
-                File f = new File(plugin.getDataFolder(), "xp_data.yml");
-                if (!f.exists()) {
-                    plugin.saveResource("xp_data.yml", false);
+                // We only care about player UUIDs for this map
+                UUID uuid = UUID.fromString(entry.getKey());
+                if (entry.getValue() instanceof Integer) {
+                    playerXP.put(uuid, (Integer) entry.getValue());
                 }
-                dataConfig = new Config(f, Config.YAML);
-                for (String key : dataConfig.getKeys()) {
-                    UUID id = UUID.fromString(key);
-                    Map<String, Object> m = dataConfig.getSection(key).getAll();
-                    xp.put(id, ((Number) m.getOrDefault("xp", 0)).intValue());
-                    level.put(id, ((Number) m.getOrDefault("level", 1)).intValue());
-                }
-                plugin.getLogger().info("Loaded XP data: " + xp.size() + " players.");
-            } catch (Exception e) {
-                plugin.getLogger().error("Failed to load xp_data.yml: " + e.getMessage());
+            } catch (IllegalArgumentException e) {
+                // Ignore keys that are not valid UUIDs (like the 'level-requirements' section)
             }
-        });
+        }
     }
 
-    /**
-     * Persist XP and level data back to xp_data.yml asynchronously.
-     */
+    private void loadLevelUpRequirements() {
+        levelUpXP.clear();
+        // Load from the 'level-requirements' section of xp.yml
+        if (xpConfig.exists("level-requirements")) {
+            for (Map.Entry<String, Object> entry : xpConfig.getSection("level-requirements").getAll().entrySet()) {
+                try {
+                    int level = Integer.parseInt(entry.getKey());
+                    int requiredXp = (Integer) entry.getValue();
+                    levelUpXP.put(level, requiredXp);
+                } catch (NumberFormatException e) {
+                    plugin.getLogger().warning("Invalid level key in xp.yml: " + entry.getKey());
+                }
+            }
+        }
+        // Add a default if empty
+        if (levelUpXP.isEmpty()) {
+            levelUpXP.put(1, 0);
+            levelUpXP.put(2, 1000);
+        }
+    }
+
     public void save() {
-        CompletableFuture.runAsync(() -> {
-            Map<String, Object> out = new HashMap<>();
-            xp.forEach((u, xpVal) -> {
-                Map<String, Object> m = new HashMap<>();
-                m.put("xp", xpVal);
-                m.put("level", level.getOrDefault(u, 1));
-                out.put(u.toString(), m);
-            });
-            dataConfig.setAll((LinkedHashMap<String, Object>) out);
-            dataConfig.save();
-        });
-    }
-
-    public int getXP(UUID id) {
-        return xp.getOrDefault(id, 0);
-    }
-
-    public int getLevel(UUID id) {
-        return level.getOrDefault(id, 1);
-    }
-
-    /**
-     * Add XP to a player and handle level ups.  Level thresholds and rewards
-     * are defined in xp.yml.  On level up the player receives coins via
-     * EconomyManager and a title is displayed.
-     *
-     * @param p      player
-     * @param amount XP to add
-     */
-    public void addXP(Player p, int amount) {
-        UUID id = p.getUniqueId();
-        int curXp = getXP(id) + amount;
-        int curLvl = getLevel(id);
-        // process level ups
-        while (curXp >= xpNeeded(curLvl)) {
-            curXp -= xpNeeded(curLvl);
-            curLvl++;
-            rewardLevel(p, curLvl);
-            p.sendTitle("§6Level Up!", "§eYou reached level " + curLvl, 5, 40, 5);
+        // Clear the config to remove old data
+        xpConfig.setAll(new LinkedHashMap<>());
+        
+        // Save player XP
+        for (Map.Entry<UUID, Integer> entry : playerXP.entrySet()) {
+            xpConfig.set(entry.getKey().toString(), entry.getValue());
         }
-        xp.put(id, curXp);
-        level.put(id, curLvl);
-        save();
-    }
 
-    /**
-     * Compute the XP needed to reach a given level.  Uses a base and growth
-     * factor defined in xp.yml.
-     *
-     * @param lvl current level
-     * @return XP needed to reach level+1
-     */
-    private int xpNeeded(int lvl) {
-        Config cfg = new Config(new File(plugin.getDataFolder(), "xp.yml"), Config.YAML);
-        int base = cfg.getInt("base", 100);
-        double growth = cfg.getDouble("growth", 1.5);
-        return (int) (base * Math.pow(growth, lvl - 1));
-    }
-
-    /**
-     * Reward the player for reaching a new level.  Reward amounts are read
-     * from the xp.yml file under rewards.<level>.
-     *
-     * @param p   player
-     * @param lvl new level
-     */
-    private void rewardLevel(Player p, int lvl) {
-        Config cfg = new Config(new File(plugin.getDataFolder(), "xp.yml"), Config.YAML);
-        int reward = cfg.getInt("rewards." + lvl, 0);
-        if (reward > 0) {
-            plugin.getEconomyManager().addBalance(p.getUniqueId(), reward);
-            p.sendPopup("§a+" + reward + " coins!");
+        // Save level requirements
+        Map<String, Integer> levelsToSave = new HashMap<>();
+        for (Map.Entry<Integer, Integer> entry : levelUpXP.entrySet()) {
+            levelsToSave.put(String.valueOf(entry.getKey()), entry.getValue());
         }
+        xpConfig.set("level-requirements", levelsToSave);
+
+        xpConfig.save();
+    }
+
+    public void addXP(Player player, int amount) {
+        if (player == null) return;
+        
+        double boost = plugin.getTerritoryBuffManager().getXpBoost(player);
+        int finalAmount = (int) (amount * (1 + (boost / 100.0)));
+
+        int currentXP = getXP(player.getUniqueId());
+        int newXP = currentXP + finalAmount;
+        playerXP.put(player.getUniqueId(), newXP);
+
+        player.sendMessage("§a+" + finalAmount + " XP" + (boost > 0 ? " (" + boost + "% Faction Boost)" : ""));
+
+        int currentLevel = getLevel(player.getUniqueId());
+        // Check if the new XP crosses a level-up threshold
+        Map.Entry<Integer, Integer> nextLevelEntry = levelUpXP.higherEntry(currentLevel);
+        if (nextLevelEntry != null && newXP >= nextLevelEntry.getValue()) {
+            player.sendTitle("§b§lLEVEL UP!", "§eYou are now level " + nextLevelEntry.getKey());
+        }
+    }
+
+    public int getXP(UUID uuid) {
+        return playerXP.getOrDefault(uuid, 0);
+    }
+
+    public int getLevel(UUID uuid) {
+        int xp = getXP(uuid);
+        Map.Entry<Integer, Integer> entry = levelUpXP.floorEntry(xp);
+        return (entry != null) ? entry.getKey() : 1;
     }
 }

@@ -6,23 +6,6 @@ import com.zombielooter.ZombieLooterX;
 import java.io.File;
 import java.util.List;
 
-/**
- * Loads configurable GUI text (titles, descriptions, buttons) and
- * now also GUI themes from gui_text.yml.
- *
- * Expected structure:
- *
- * gui:
- *   boss:
- *     theme: "CRIMSON"
- *     title: "Boss Arena"
- *     description: "Face terrifying bosses..."
- *     buttons:
- *       - "List Bosses"
- *       - "Join"
- *       - "Rewards"
- *       - "Leave"
- */
 public class GUITextManager {
     private final Config config;
 
@@ -47,6 +30,7 @@ public class GUITextManager {
         return (List<String>) config.getList("gui." + key + ".buttons");
     }
 
+    public String getText(String key, String defaultValue) {
+        return config.getString("gui." + key, defaultValue);
+    }
 }
-
-

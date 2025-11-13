@@ -27,6 +27,10 @@ commands:
     description: Boss event controls (admin or timed)
     usage: /boss <start <id>|stop|list>
     permission: zombielooter.boss
+  vendor:
+    description: Vendor commands (buy/sell/trade)
+    usage: /vendor
+    permission: zombielooter.vendor
   economy:
     description: Economy commands (balance, pay)
     usage: /economy <balance|pay <player> <amount>>
