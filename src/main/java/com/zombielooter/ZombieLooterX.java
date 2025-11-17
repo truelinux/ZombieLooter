@@ -2,14 +2,18 @@ package com.zombielooter;
 
 import cn.nukkit.Player;
 import cn.nukkit.command.PluginCommand;
+import cn.nukkit.entity.mob.EntityBoss;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.level.ChunkLoadEvent;
 import cn.nukkit.event.level.ChunkUnloadEvent;
+import cn.nukkit.event.player.PlayerJoinEvent;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.registry.Registries;
 import cn.nukkit.registry.RegisterException;
 
+import cn.nukkit.utils.BossBarColor;
+import cn.nukkit.utils.DummyBossBar;
 import com.zombielooter.boss.BossEventManager;
 import com.zombielooter.commands.*;
 import com.zombielooter.economy.EconomyManager;
@@ -39,6 +43,9 @@ import com.zombielooter.zones.PvPListener;
 import com.zombielooter.zones.ZoneManager;
 import me.skh6075.pnx.graphicscore.placeholder.PlaceholderAPI;
 
+import cn.nukkit.utils.TextFormat;
+import cn.nukkit.scheduler.Task;
+
 public class ZombieLooterX extends PluginBase implements Listener {
 
     public static ZombieLooterX instance;
@@ -65,22 +72,30 @@ public class ZombieLooterX extends PluginBase implements Listener {
     private RaidManager raidManager;
     private TerritoryBuffManager territoryBuffManager;
 
-    // Additional systems added for a more immersive experience
+    // Additional systems
     private GUITextManager guiTextManager;
     private UIManager uiManager;
     private XPManager xpManager;
     private WorldEventManager worldEventManager;
     private KillStreakManager killStreakManager;
     private LeaderboardManager leaderboardManager;
+
     private int marqueeTaskId = -1;
+
+    // =======================
+    //     BOSSBAR MARQUEE
+    // =======================
+    private String marqueeText = "";
+    private int bossbarMarqueeTaskId = -1;
+
 
     @Override
     public void onLoad() {
         try {
-             Registries.ENTITY.registerCustomEntity(this, VendorNPC.class);
-         } catch (RegisterException e) {
-             throw new RuntimeException(e);
-         }
+            Registries.ENTITY.registerCustomEntity(this, VendorNPC.class);
+        } catch (RegisterException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -90,7 +105,6 @@ public class ZombieLooterX extends PluginBase implements Listener {
         getDataFolder().mkdirs();
 
         try {
-            // ---- Initialize managers (order matters where there are deps) ----
             uiManager        = new UIManager(this);
             guiTextManager   = new GUITextManager(this);
             hudManager       = new HUDManager();
@@ -117,6 +131,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
             worldEventManager    = new WorldEventManager(this);
             killStreakManager    = new KillStreakManager(this);
             leaderboardManager   = new LeaderboardManager(this);
+
         } catch (Exception e) {
             getLogger().error("Failed to initialize ZombieLooterX!", e);
             getServer().getPluginManager().disablePlugin(this);
@@ -163,13 +178,122 @@ public class ZombieLooterX extends PluginBase implements Listener {
         saveResource("vendors.yml", false);
         saveResource("territory_buffs.yml", false);
 
-
         PlaceholderAPI.INSTANCE.register(new ZombielooterPlaceholderExtension());
 
+        // Start existing hotbar stats popup
         startHotbarMarquee();
 
-        getLogger().info("✅ ZombieLooterX enabled. Commands: /zlx, /f, /zmarket, /quest, /boss, /economy, /vendor");
+        // Start new bossbar marquee
+        startBossBarMarquee();
+
+        getLogger().info("✅ ZombieLooterX enabled.");
     }
+
+    // ======================================================
+    //               BOSSBAR MARQUEE LOGIC
+    // ======================================================
+
+    private void startBossBarMarquee() {
+        stopBossBarMarquee();
+        String raw = getConfig().getString("marquee", "&aZombie &bLooter &cServer");
+        scrollingBuffer = TextFormat.colorize('&', raw) + "     ";
+
+
+        bossbarMarqueeTaskId = getServer().getScheduler().scheduleRepeatingTask(this, new Task() {
+            @Override
+            public void onRun(int tick) {
+                rotateBuffer();
+                String frame = buildMarqueeFrame();
+                for (Player p : getServer().getOnlinePlayers().values()) {
+                    for(DummyBossBar bar : p.getDummyBossBars().values()) {
+                        p.updateBossBar(frame, 100, bar.getBossBarId());
+                    }
+                }
+            }
+        }, 3).getTaskId();
+    }
+
+    private void stopBossBarMarquee() {
+        if (bossbarMarqueeTaskId != -1) {
+            getServer().getScheduler().cancelTask(bossbarMarqueeTaskId);
+            bossbarMarqueeTaskId = -1;
+        }
+        for (Player p : getServer().getOnlinePlayers().values()) {
+            DummyBossBar bossBar = p.getDummyBossBar(0);
+            bossBar.destroy();
+        }
+    }
+
+    private String scrollingBuffer;
+
+    private void rotateBuffer() {
+        if (scrollingBuffer.startsWith("§") && scrollingBuffer.length() > 2) {
+            scrollingBuffer = scrollingBuffer.substring(2) + scrollingBuffer.substring(0, 2);
+        } else {
+            scrollingBuffer = scrollingBuffer.substring(1) + scrollingBuffer.charAt(0);
+        }
+    }
+
+
+    private String buildMarqueeFrame() {
+        String active = getActiveColors(scrollingBuffer);
+        return active + scrollingBuffer;
+    }
+
+    private String getActiveColors(String text) {
+        String active = "";
+        String lastColor = "";
+
+        for (int i = 0; i < text.length() - 1; i++) {
+            if (text.charAt(i) == '§') {
+                String code = text.substring(i, i + 2);
+                char type = code.charAt(1);
+
+                // Color code resets formatting
+                if ("0123456789abcdef".indexOf(type) != -1) {
+                    lastColor = code;
+                    active = code;  // reset to this color
+                }
+                else if ("lnokm".indexOf(type) != -1) {
+                    active += code; // stacked formatting
+                }
+                else if (type == 'r') {
+                    active = "";
+                }
+                i++;
+            }
+        }
+
+        return active;
+    }
+
+
+    /**
+     * Tracks persistent formatting:
+     * - Last color wins
+     * - Formatting codes (§l, §n, §o, §k) stack
+     */
+    private String updateActive(String existing, String code) {
+        char type = code.charAt(1);
+
+        // COLOR CODES replace everything
+        if ((type >= '0' && type <= '9') || (type >= 'a' && type <= 'f')) {
+            return code;
+        }
+
+        // FORMATTING CODES stack AFTER color
+        if ("lnokm".contains(String.valueOf(type))) {
+            return existing + code;
+        }
+
+        // Reset wipe all
+        if (type == 'r') {
+            return "";
+        }
+
+        return existing;
+    }
+
 
     @EventHandler
     public void onChunkLoad(ChunkLoadEvent event) {
@@ -186,35 +310,20 @@ public class ZombieLooterX extends PluginBase implements Listener {
         getLogger().info("💀 ZombieLooterX disabling...");
 
         stopHotbarMarquee();
+        stopBossBarMarquee();
 
-        // Save all data before shutdown
-        if (questManager != null) {
-            questManager.saveProgress();
-            getLogger().info("✅ Saved quest progress");
-        }
-
-        if (factionManager != null) {
-            factionManager.save();
-            getLogger().info("✅ Saved factions");
-        }
-
-        if (claimManager != null) {
-            claimManager.save();
-            getLogger().info("✅ Saved land claims");
-        }
-
-        if (marketManager != null) {
-            marketManager.save();
-            getLogger().info("✅ Saved marketplace listings");
-        }
-
-        if (xpManager != null) {
-            xpManager.save();
-            getLogger().info("✅ Saved XP data");
-        }
+        if (questManager != null) questManager.saveProgress();
+        if (factionManager != null) factionManager.save();
+        if (claimManager != null) claimManager.save();
+        if (marketManager != null) marketManager.save();
+        if (xpManager != null) xpManager.save();
 
         getLogger().info("💀 ZombieLooterX disabled.");
     }
+
+    // ======================================================
+    //                EXISTING ACTIONBAR POPUP
+    // ======================================================
 
     private void startHotbarMarquee() {
         stopHotbarMarquee();
@@ -227,15 +336,12 @@ public class ZombieLooterX extends PluginBase implements Listener {
                 int listingCount = marketManager != null ? marketManager.getListings().size() : 0;
                 int infectionLevel = infectionManager != null ? infectionManager.getInfectionLevel() : 0;
 
-
                 String message = "§l§k==§r§l§fPlayers \ue130: §a" + playerCount
                         + " §7| §fListings: §b" + listingCount
                         + " §7| §fInfection: §c" + infectionLevel + "%";
 
                 for (Player player : getServer().getOnlinePlayers().values()) {
-                    if (player != null && player.isOnline()) {
-                        player.sendActionBar(message);
-                    }
+                    player.sendActionBar(message);
                 }
             }
         }, 1).getTaskId();
@@ -248,7 +354,10 @@ public class ZombieLooterX extends PluginBase implements Listener {
         }
     }
 
-    // Helper to wire commands safely
+    // ======================================================
+    //  SAFE COMMAND REGISTRATION
+    // ======================================================
+
     private void tryRegisterCommand(String name, Object executor) {
         @SuppressWarnings("unchecked")
         PluginCommand<ZombieLooterX> cmd = (PluginCommand<ZombieLooterX>) getCommand(name);
@@ -263,7 +372,8 @@ public class ZombieLooterX extends PluginBase implements Listener {
         }
     }
 
-    // ---- Getters for other classes/commands to access managers ----
+
+// ---- Getters for other classes/commands to access managers ----
     public LootManager getLootManager()               { return lootManager; }
     public ZombieSpawner getZombieSpawner()           { return zombieSpawner; }
     public ZoneManager getZoneManager()               { return zoneManager; }

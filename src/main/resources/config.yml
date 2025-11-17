@@ -8,4 +8,6 @@ horde:
   size_min: 3              # Minimum number of zombies per horde
   size_max: 7              # Maximum number of zombies per horde
   check_interval: 200      # How often to check for horde spawn (in ticks, 20 = 1 second)
+marquee: "&aZombie&cLooter&6X &fSurvival"
+
 
