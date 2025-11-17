@@ -4,13 +4,10 @@ import cn.nukkit.Player;
 import cn.nukkit.level.Location;
 import cn.nukkit.utils.Config;
 import com.zombielooter.ZombieLooterX;
+import com.zombielooter.gui.HUDManager;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class FactionManager {
 
@@ -99,9 +96,14 @@ public class FactionManager {
     }
 
     public void disband(String name) {
+        Set<UUID> set = new HashSet<>(factions.get(name).getMembers());
         factions.remove(name);
         factionsConfig.remove(name);
         save();
+        for (UUID uuid : set) {
+            Optional<Player> p = plugin.getServer().getPlayer(uuid);
+            if(p.isPresent()) HUDManager.refreshHud(plugin, p.orElse(null));;
+        }
     }
 
     public List<Faction> getFactions() {

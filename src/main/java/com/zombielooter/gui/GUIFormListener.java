@@ -94,25 +94,25 @@ public class GUIFormListener implements Listener {
         }
 
         // --- Custom Form Handling ---
-        if (event.getWindow() instanceof CustomForm form) {
-            if (!(event.getResponse() instanceof CustomResponse response)) return;
-            String title = form.title();
+        if (event.getResponse() instanceof CustomResponse response) {
+            plugin.getLogger().info("Form response received: " + event.getWindow().title());
+            String title = event.getWindow().title();
 
             // Faction Forms
-            if (title.equals(text.getTitle("form_create_faction"))) {
+            if (title.equals(text.get("gui.form_create_faction.title", "Create Faction"))) {
                 plugin.getServer().executeCommand(player, "f create " + response.getInputResponse(0));
-            } else if (title.equals(text.getTitle("form_invite_player"))) {
+            } else if (title.equals(text.get("gui.form_invite_player.title", "Invite Player"))) {
                 plugin.getServer().executeCommand(player, "f invite " + response.getInputResponse(0));
-            } else if (title.equals(text.getTitle("form_kick_player"))) {
+            } else if (title.equals(text.get("gui.form_kick_player.title", "Kick Player"))) {
                 String memberToKick = response.getDropdownResponse(0).elementText();
                 plugin.getServer().executeCommand(player, "f kick " + memberToKick);
-            } else if (title.equals(text.getTitle("form_accept_invite"))) {
+            } else if (title.equals(text.get("gui.form_accept_invite.title", "Accept Invite"))) {
                 String factionToJoin = response.getDropdownResponse(0).elementText();
                 plugin.getServer().executeCommand(player, "f join " + factionToJoin);
-            } else if (title.equals(text.getTitle("form_deposit"))) {
+            } else if (title.equals(text.get("gui.form_deposit.title", "Deposit to Bank"))) {
                 float amount = response.getSliderResponse(0);
                 plugin.getServer().executeCommand(player, "f deposit " + (int)amount);
-            } else if (title.equals(text.getTitle("form_withdraw"))) {
+            } else if (title.equals(text.get("gui.form_withdraw.title", "Withdraw from Bank"))) {
                 float amount = response.getSliderResponse(0);
                 plugin.getServer().executeCommand(player, "f withdraw " + (int)amount);
             }

@@ -1,20 +1,50 @@
-# Configuration for loot dropped by zombies.
+tiers:
+  common:
+    chance: 0.60
+    rolls: 2
+    items:
+      - id: "rotten_flesh"
+        amount: 1-4
+        weight: 40
+      - id: "iron_ingot"
+        amount: 1
+        weight: 10
 
-zombie_loot:
-  # Rotten Flesh (Common)
-  - id: "minecraft:rotten_flesh"
-    min_amount: 1
-    max_amount: 2
-    chance: 0.75 # 75% chance to drop
+  rare:
+    chance: 0.30
+    rolls: 1
+    items:
+      - id: "diamond"
+        amount: 1
+        weight: 5
+      - id: "iron_sword"
+        name: "&bReinforced Blade"
+        enchants:
+          unbreaking:
+            min: 1
+            max: 3
+        weight: 8
 
-  # Iron Nugget (Uncommon) - Represents Pistol Ammo
-  - id: "minecraft:iron_nugget"
-    min_amount: 1
-    max_amount: 5
-    chance: 0.20 # 20% chance to drop
-
-  # Fermented Spider Eye (Rare) - Represents a Mutated Eyeball
-  - id: "minecraft:fermented_spider_eye"
-    min_amount: 1
-    max_amount: 1
-    chance: 0.05 # 5% chance to drop
+  legendary:
+    chance: 0.10
+    rolls: 1
+    items:
+      - id: "diamond_sword"
+        name: "&6Sunstrike"
+        lore:
+          - "&7A blade infused with nuclear fire."
+        prefixes:
+          - "&cCursed "
+          - "&eBlessed "
+        suffixes:
+          - " &7of Rot"
+          - " &bof Titans"
+        enchants:
+          sharpness:
+            min: 3
+            max: 5
+          fire_aspect:
+            min: 1
+            max: 2
+        custom_model_data: 45
+        weight: 1

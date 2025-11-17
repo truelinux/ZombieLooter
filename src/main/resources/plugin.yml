@@ -7,6 +7,10 @@ author: You
 description: Advanced zombie looter PvP gamemode with factions, quests, infection events, bosses, marketplace, and dynamic world systems.
 
 commands:
+  lootpreview:
+    description: Shows all possible loot from loot.yml
+    usage: /lootpreview
+    permission: zombielooter.lootpreview
   zlx:
     description: Admin command for ZombieLooterX (reload configs, spawn hordes, etc.)
     usage: /zlx <reload|spawn [count]>
@@ -38,6 +42,8 @@ commands:
     permission: zombielooter.economy
 
 permissions:
+  zombielooter.lootpreview:
+    default: true
   zombielooter.admin:
     default: op
   zombielooter.faction:

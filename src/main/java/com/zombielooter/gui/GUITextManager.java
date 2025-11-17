@@ -33,4 +33,10 @@ public class GUITextManager {
     public String getText(String key, String defaultValue) {
         return config.getString("gui." + key, defaultValue);
     }
+
+    public String get(String key, String defaultValue) {
+        return config.getString(key, defaultValue);
+    }
+
+
 }

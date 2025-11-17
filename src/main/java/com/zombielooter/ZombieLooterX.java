@@ -137,6 +137,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
 
         // ---- Register commands via setExecutor() ----
         tryRegisterCommand("zlx",     new ZombieCommand(this));
+        tryRegisterCommand("lootpreview", new LootPreviewCommand(this, lootManager));
         tryRegisterCommand("f",       new FactionCommand(this));
         tryRegisterCommand("zmarket", new MarketCommand(this));
         tryRegisterCommand("quest",   new QuestCommand(this));
@@ -227,7 +228,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
                 int infectionLevel = infectionManager != null ? infectionManager.getInfectionLevel() : 0;
 
 
-                String message = "§l§fPlayers \ue130: §a" + playerCount
+                String message = "§l§k==§r§l§fPlayers \ue130: §a" + playerCount
                         + " §7| §fListings: §b" + listingCount
                         + " §7| §fInfection: §c" + infectionLevel + "%";
 
