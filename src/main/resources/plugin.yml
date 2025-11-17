@@ -40,6 +40,10 @@ commands:
     usage: /economy <balance|pay <player> <amount>>
     aliases: [eco]
     permission: zombielooter.economy
+  kitpvp:
+    description: Join the KitPvP arena and select a kit
+    usage: /kitpvp [join|leave|leaderboard]
+    permission: zombielooter.kitpvp
 
 permissions:
   zombielooter.lootpreview:
@@ -53,6 +57,8 @@ permissions:
   zombielooter.boss:
     default: op
   zombielooter.economy:
+    default: true
+  zombielooter.kitpvp:
     default: true
   zlx.market:
     default: true

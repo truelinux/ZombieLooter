@@ -1,0 +1,51 @@
+kitpvp:
+  world: "kitpvp"
+  arena-spawn:
+    x: 0
+    y: 70
+    z: 0
+  selection-spawn:
+    x: 5
+    y: 70
+    z: 5
+  afk-seconds: 60
+
+  kits:
+    warrior:
+      name: "Warrior"
+      icon: "minecraft:iron_sword"
+      armor:
+        helmet: "minecraft:iron_helmet"
+        chestplate: "minecraft:iron_chestplate"
+        leggings: "minecraft:iron_leggings"
+        boots: "minecraft:iron_boots"
+      contents:
+        - "minecraft:iron_sword 1"
+        - "minecraft:shield 1"
+        - "minecraft:golden_apple 3"
+    archer:
+      name: "Archer"
+      icon: "minecraft:bow"
+      armor:
+        helmet: "minecraft:leather_helmet"
+        chestplate: "minecraft:leather_chestplate"
+        leggings: "minecraft:leather_leggings"
+        boots: "minecraft:leather_boots"
+      contents:
+        - "minecraft:bow 1"
+        - "minecraft:arrow 64"
+        - "minecraft:stone_sword 1"
+
+  chests:
+    warrior:
+      world: "kitpvp"
+      x: 8
+      y: 70
+      z: 8
+      hologram-offset: 1.6
+    archer:
+      world: "kitpvp"
+      x: 10
+      y: 70
+      z: 8
+      hologram-offset: 1.6

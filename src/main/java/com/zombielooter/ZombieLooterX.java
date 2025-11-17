@@ -41,6 +41,8 @@ import com.zombielooter.pvp.KillStreakManager;
 import com.zombielooter.leaderboard.LeaderboardManager;
 import com.zombielooter.zones.PvPListener;
 import com.zombielooter.zones.ZoneManager;
+import com.zombielooter.kitpvp.KitPvpManager;
+import com.zombielooter.kitpvp.KitPvpListener;
 import me.skh6075.pnx.graphicscore.placeholder.PlaceholderAPI;
 
 import cn.nukkit.utils.TextFormat;
@@ -79,6 +81,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
     private WorldEventManager worldEventManager;
     private KillStreakManager killStreakManager;
     private LeaderboardManager leaderboardManager;
+    private KitPvpManager kitPvpManager;
 
     private int marqueeTaskId = -1;
 
@@ -131,6 +134,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
             worldEventManager    = new WorldEventManager(this);
             killStreakManager    = new KillStreakManager(this);
             leaderboardManager   = new LeaderboardManager(this);
+            kitPvpManager        = new KitPvpManager(this);
 
         } catch (Exception e) {
             getLogger().error("Failed to initialize ZombieLooterX!", e);
@@ -149,6 +153,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
         getServer().getPluginManager().registerEvents(new PlayerDeathListener(this), this);
         getServer().getPluginManager().registerEvents(new NPCListener(this, npcManager), this);
         getServer().getPluginManager().registerEvents(new RaidListener(this), this);
+        getServer().getPluginManager().registerEvents(new KitPvpListener(kitPvpManager), this);
 
         // ---- Register commands via setExecutor() ----
         tryRegisterCommand("zlx",     new ZombieCommand(this));
@@ -159,6 +164,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
         tryRegisterCommand("boss",    new BossCommand(this));
         tryRegisterCommand("economy", new EconomyCommand(this));
         tryRegisterCommand("vendor",  new VendorCommand(this));
+        tryRegisterCommand("kitpvp",  new com.zombielooter.kitpvp.KitPvpCommand(kitPvpManager));
 
         // ---- Save default resources if missing ----
         saveResource("config.yml", false);
@@ -177,6 +183,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
         saveResource("raid.yml", false);
         saveResource("vendors.yml", false);
         saveResource("territory_buffs.yml", false);
+        saveResource("kitpvp.yml", false);
 
         PlaceholderAPI.INSTANCE.register(new ZombielooterPlaceholderExtension());
 
@@ -398,6 +405,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
     public WorldEventManager getWorldEventManager()  { return worldEventManager; }
     public KillStreakManager getKillStreakManager()  { return killStreakManager; }
     public LeaderboardManager getLeaderboardManager(){ return leaderboardManager; }
+    public KitPvpManager getKitPvpManager()          { return kitPvpManager; }
 
     public GUITextManager getGUITextManager() {return guiTextManager;}
 }
