@@ -1,0 +1,16 @@
+leaderboards:
+  refresh-seconds: 30
+  economy:
+    - world: world
+      x: 0.5
+      y: 70
+      z: 0.5
+      limit: 5
+      title: "&6Top Balances"
+  kitpvp:
+    - world: kitpvp
+      x: 5.5
+      y: 70
+      z: 0.5
+      limit: 5
+      title: "&bKitPvP Top Kills"

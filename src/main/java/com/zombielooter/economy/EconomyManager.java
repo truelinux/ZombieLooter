@@ -5,9 +5,7 @@ import com.zombielooter.ZombieLooterX;
 import cn.nukkit.utils.Config;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class EconomyManager {
     private final ZombieLooterX plugin;
@@ -48,6 +46,20 @@ public class EconomyManager {
 
     public Map<String, Integer> getFactionBalances() {
         return factionBalances;
+    }
+
+    public List<Map.Entry<UUID, Integer>> getTopBalances(int limit) {
+        return balances.entrySet().stream()
+                .sorted((a, b) -> Integer.compare(b.getValue(), a.getValue()))
+                .limit(Math.max(1, limit))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    public List<Map.Entry<String, Integer>> getTopFactionBalances(int limit) {
+        return factionBalances.entrySet().stream()
+                .sorted((a, b) -> Integer.compare(b.getValue(), a.getValue()))
+                .limit(Math.max(1, limit))
+                .collect(java.util.stream.Collectors.toList());
     }
 
     private void load() {

@@ -189,6 +189,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
         saveResource("territory_buffs.yml", false);
         saveResource("kitpvp.yml", false);
         saveResource("daily_rewards.yml", false);
+        saveResource("leaderboards.yml", false);
 
         PlaceholderAPI.INSTANCE.register(new ZombielooterPlaceholderExtension());
 
@@ -330,6 +331,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
         if (marketManager != null) marketManager.save();
         if (xpManager != null) xpManager.save();
         if (economyManager != null) economyManager.save();
+        if (leaderboardManager != null) leaderboardManager.shutdown();
 
         getLogger().info("💀 ZombieLooterX disabled.");
     }

@@ -239,6 +239,13 @@ public class KitPvpManager {
         return stats;
     }
 
+    public List<Map.Entry<UUID, KitStats>> getTopKillers(int limit) {
+        return stats.entrySet().stream()
+                .sorted((a, b) -> Integer.compare(b.getValue().getKills(), a.getValue().getKills()))
+                .limit(Math.max(1, limit))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
     public void handleExternalTeleport(Player player, Level destination) {
         if (destination != null && destination.getName().equalsIgnoreCase(kitWorldName)) {
             return; // Still inside the KitPvP world
