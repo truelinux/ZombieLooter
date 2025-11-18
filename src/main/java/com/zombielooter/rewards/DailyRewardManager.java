@@ -47,7 +47,7 @@ public class DailyRewardManager {
                 List<String> itemStrings = (List<String>) rewardData.getOrDefault("items", Collections.emptyList());
                 for (String line : itemStrings) {
                     Item item = parseItem(line);
-                    if (item.getId() != 0) {
+                    if (item.getFullId() != 0) {
                         items.add(item);
                     }
                 }
@@ -105,16 +105,14 @@ public class DailyRewardManager {
         }
 
         Inventory inv = player.getInventory();
-        for (Item item : reward.items) {
-            Map<Integer, Item> leftover = inv.addItem(item.clone());
-            if (!leftover.isEmpty()) {
-                leftover.values().forEach(drop -> player.getLevel().dropItem(player, drop));
-            }
+        Item[] leftover = inv.addItem(reward.items.toArray(new Item[0]));
+        if (leftover.length > 0) {
+            Arrays.stream(leftover).toList().forEach(drop -> player.getLevel().dropItem(player, drop));
         }
 
         for (String cmd : reward.commands) {
             String parsed = cmd.replace("{player}", player.getName());
-            plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), parsed);
+            plugin.getServer().executeCommand(plugin.getServer().getConsoleSender(), parsed);
         }
 
         String customMsg = reward.message;
@@ -128,10 +126,10 @@ public class DailyRewardManager {
 
     private Item parseItem(String value) {
         if (value == null || value.isEmpty()) {
-            return Item.get(0);
+            return Item.AIR;
         }
         String[] parts = value.split(" ");
-        Item item = Item.fromString(parts[0]);
+        Item item = Item.get(parts[0]);
         if (parts.length > 1) {
             try {
                 item.setCount(Integer.parseInt(parts[1]));
