@@ -37,9 +37,17 @@ commands:
     permission: zombielooter.vendor
   economy:
     description: Economy commands (balance, pay)
-    usage: /economy <balance|pay <player> <amount>>
+    usage: /economy <balance|top|pay <player> <amount>>
     aliases: [eco]
     permission: zombielooter.economy
+  kitpvp:
+    description: Join the KitPvP arena and select a kit
+    usage: /kitpvp [join|leave|leaderboard]
+    permission: zombielooter.kitpvp
+  dailyrewards:
+    description: Claim your daily login reward with streak bonuses
+    usage: /dailyrewards [claim|status|reset <player>]
+    permission: zombielooter.dailyrewards
 
 permissions:
   zombielooter.lootpreview:
@@ -54,5 +62,11 @@ permissions:
     default: op
   zombielooter.economy:
     default: true
+  zombielooter.kitpvp:
+    default: true
+  zombielooter.dailyrewards:
+    default: true
+  zombielooter.dailyrewards.admin:
+    default: op
   zlx.market:
     default: true

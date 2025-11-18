@@ -32,6 +32,14 @@ public class EconomyCommand implements CommandExecutor {
                 } else sender.sendMessage(textManager.getText("commands.economy.only_players", "§cPlayers only."));
                 break;
 
+            case "top":
+                if (sender instanceof Player) {
+                    plugin.getLeaderboardManager().showEconomyTop((Player) sender, 5);
+                } else {
+                    sender.sendMessage(textManager.getText("commands.economy.only_players", "§cPlayers only."));
+                }
+                break;
+
             case "give":
             case "take":
                 if (!sender.hasPermission("zombielooter.economy.admin")) {
