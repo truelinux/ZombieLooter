@@ -32,6 +32,7 @@ import com.zombielooter.npc.VendorNPC;
 import com.zombielooter.placeholder.ZombielooterPlaceholderExtension;
 import com.zombielooter.quests.QuestCommand;
 import com.zombielooter.quests.QuestManager;
+import com.zombielooter.rewards.DailyRewardManager;
 import com.zombielooter.security.AntiCheatBasic;
 import com.zombielooter.security.AntiExploitListener;
 import com.zombielooter.gui.HUDManager;
@@ -83,6 +84,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
     private KillStreakManager killStreakManager;
     private LeaderboardManager leaderboardManager;
     private KitPvpManager kitPvpManager;
+    private DailyRewardManager dailyRewardManager;
 
     private int marqueeTaskId = -1;
 
@@ -136,6 +138,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
             killStreakManager    = new KillStreakManager(this);
             leaderboardManager   = new LeaderboardManager(this);
             kitPvpManager        = new KitPvpManager(this);
+            dailyRewardManager   = new DailyRewardManager(this);
 
         } catch (Exception e) {
             getLogger().error("Failed to initialize ZombieLooterX!", e);
@@ -166,6 +169,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
         tryRegisterCommand("economy", new EconomyCommand(this));
         tryRegisterCommand("vendor",  new VendorCommand(this));
         tryRegisterCommand("kitpvp",  new com.zombielooter.kitpvp.KitPvpCommand(kitPvpManager));
+        tryRegisterCommand("dailyrewards", new DailyRewardsCommand(dailyRewardManager));
 
         // ---- Save default resources if missing ----
         saveResource("config.yml", false);
@@ -185,6 +189,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
         saveResource("vendors.yml", false);
         saveResource("territory_buffs.yml", false);
         saveResource("kitpvp.yml", false);
+        saveResource("daily_rewards.yml", false);
 
         PlaceholderAPI.INSTANCE.register(new ZombielooterPlaceholderExtension());
 
@@ -407,6 +412,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
     public KillStreakManager getKillStreakManager()  { return killStreakManager; }
     public LeaderboardManager getLeaderboardManager(){ return leaderboardManager; }
     public KitPvpManager getKitPvpManager()          { return kitPvpManager; }
+    public DailyRewardManager getDailyRewardManager(){ return dailyRewardManager; }
 
     public GUITextManager getGUITextManager() {return guiTextManager;}
 }

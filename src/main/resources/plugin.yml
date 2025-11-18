@@ -44,6 +44,10 @@ commands:
     description: Join the KitPvP arena and select a kit
     usage: /kitpvp [join|leave|leaderboard]
     permission: zombielooter.kitpvp
+  dailyrewards:
+    description: Claim your daily login reward with streak bonuses
+    usage: /dailyrewards
+    permission: zombielooter.dailyrewards
 
 permissions:
   zombielooter.lootpreview:
@@ -59,6 +63,8 @@ permissions:
   zombielooter.economy:
     default: true
   zombielooter.kitpvp:
+    default: true
+  zombielooter.dailyrewards:
     default: true
   zlx.market:
     default: true
