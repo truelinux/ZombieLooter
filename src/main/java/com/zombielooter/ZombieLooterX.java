@@ -330,6 +330,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
         if (claimManager != null) claimManager.save();
         if (marketManager != null) marketManager.save();
         if (xpManager != null) xpManager.save();
+        if (economyManager != null) economyManager.save();
 
         getLogger().info("💀 ZombieLooterX disabled.");
     }
