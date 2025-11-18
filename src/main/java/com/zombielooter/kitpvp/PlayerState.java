@@ -16,7 +16,7 @@ public class PlayerState {
     private final Location location;
     private final Map<Integer, Item> inventory;
     private final Item[] armor;
-    private final double health;
+    private final float health;
     private final int food;
 
     public PlayerState(Player player) {
@@ -26,7 +26,7 @@ public class PlayerState {
         this.inventory = cloneInventory(player);
         this.armor = cloneArmor(player.getInventory().getArmorContents());
         this.health = player.getHealth();
-        this.food = player.getFoodData().getLevel();
+        this.food = player.getFoodData().getFood();
     }
 
     public void restore(Player player) {
@@ -41,7 +41,7 @@ public class PlayerState {
         player.getInventory().setContents(inventory);
         player.getInventory().setArmorContents(armor);
         player.setHealth(health);
-        player.getFoodData().setLevel(food);
+        player.getFoodData().reset();
     }
 
     private Map<Integer, Item> cloneInventory(Player player) {
@@ -55,7 +55,7 @@ public class PlayerState {
     private Item[] cloneArmor(Item[] armorContents) {
         Item[] clone = new Item[armorContents.length];
         for (int i = 0; i < armorContents.length; i++) {
-            clone[i] = armorContents[i] == null ? Item.get(0) : armorContents[i].clone();
+            clone[i] = armorContents[i] == null ? Item.AIR : armorContents[i].clone();
         }
         return clone;
     }

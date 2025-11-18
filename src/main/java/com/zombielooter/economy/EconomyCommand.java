@@ -1,4 +1,4 @@
-package com.zombielooter.commands;
+package com.zombielooter.economy;
 
 import cn.nukkit.Player;
 import cn.nukkit.command.Command;

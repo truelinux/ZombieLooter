@@ -4,12 +4,15 @@ import cn.nukkit.Player;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.entity.EntityDamageByEntityEvent;
-import cn.nukkit.event.inventory.InventoryTransactionEvent;
+import cn.nukkit.event.inventory.InventoryMoveItemEvent;
+import cn.nukkit.event.inventory.ItemStackRequestActionEvent;
 import cn.nukkit.event.player.PlayerDeathEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.player.PlayerMoveEvent;
 import cn.nukkit.event.player.PlayerQuitEvent;
+import cn.nukkit.inventory.fake.FakeInventory;
 import cn.nukkit.item.Item;
+import cn.nukkit.network.protocol.InventoryTransactionPacket;
 import cn.nukkit.utils.TextFormat;
 
 public class KitPvpListener implements Listener {
@@ -36,10 +39,10 @@ public class KitPvpListener implements Listener {
     }
 
     @EventHandler
-    public void onInventoryTransaction(InventoryTransactionEvent event) {
-        Player player = event.getSource();
+    public void onInventoryTransaction(ItemStackRequestActionEvent event) {
+        Player player = event.getPlayer();
         if (!manager.isPreviewing(player)) return;
-        boolean containsFake = event.getTransaction().getInventories().stream().anyMatch(inv -> inv instanceof cn.nukkit.inventory.fake.FakeInventory);
+        boolean containsFake = player.getTopWindow().get() instanceof FakeInventory;
         if (!containsFake) return;
         event.setCancelled();
         player.removeAllWindows();

@@ -1,4 +1,4 @@
-package com.zombielooter.commands;
+package com.zombielooter.factions;
 
 import cn.nukkit.IPlayer;
 import cn.nukkit.Player;
@@ -6,7 +6,6 @@ import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandExecutor;
 import cn.nukkit.command.CommandSender;
 import com.zombielooter.ZombieLooterX;
-import com.zombielooter.factions.Faction;
 import com.zombielooter.gui.FactionMenuUI;
 import com.zombielooter.gui.GUITextManager;
 import com.zombielooter.gui.HUDManager;

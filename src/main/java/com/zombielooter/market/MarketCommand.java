@@ -1,4 +1,4 @@
-package com.zombielooter.commands;
+package com.zombielooter.market;
 
 import cn.nukkit.Player;
 import cn.nukkit.command.Command;
@@ -6,7 +6,6 @@ import cn.nukkit.command.CommandExecutor;
 import cn.nukkit.command.CommandSender;
 import com.zombielooter.ZombieLooterX;
 import com.zombielooter.gui.GUITextManager;
-import com.zombielooter.market.MarketManager;
 import com.zombielooter.gui.MarketMenuUI;
 
 public class MarketCommand implements CommandExecutor {

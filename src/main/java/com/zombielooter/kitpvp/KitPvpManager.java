@@ -114,10 +114,10 @@ public class KitPvpManager {
 
     private Item parseItem(String value) {
         if (value == null || value.isEmpty()) {
-            return Item.get(0);
+            return Item.AIR;
         }
         String[] parts = value.split(" ");
-        Item item = Item.fromString(parts[0]);
+        Item item = Item.get(parts[0]);
         if (parts.length > 1) {
             try {
                 item.setCount(Integer.parseInt(parts[1]));
@@ -188,7 +188,7 @@ public class KitPvpManager {
             player.teleport(arenaSpawn);
         }
         player.setHealth(player.getMaxHealth());
-        player.getFoodData().setLevel(20);
+        player.getFoodData().reset();
         markActivity(player);
     }
 
@@ -212,9 +212,9 @@ public class KitPvpManager {
             player.teleport(selectionSpawn);
         }
         player.getInventory().clearAll();
-        player.getInventory().setArmorContents(new Item[]{Item.get(0), Item.get(0), Item.get(0), Item.get(0)});
+        player.getInventory().setArmorContents(new Item[]{Item.AIR, Item.AIR, Item.AIR, Item.AIR});
         player.setHealth(player.getMaxHealth());
-        player.getFoodData().setLevel(20);
+        player.getFoodData().reset();
         markActivity(player);
         player.sendMessage(TextFormat.colorize('&', "&aWelcome to KitPvP! Tap a kit chest to preview."));
         showLeaderboard(player);
@@ -321,7 +321,7 @@ public class KitPvpManager {
             if (name == null) {
                 name = entry.getKey().toString().substring(0, 8);
             }
-            player.sendMessage(TextFormat.colorize('&', "&e" + (rank++) + ". &f" + name + " &7- Kills: " + entry.getValue().getKills() + " K/D: " + String.format(Locale.US, "%.2f", entry.getValue().getKDR()))));
+            player.sendMessage(TextFormat.colorize('&', "&e" + (rank++) + ". &f" + name + " &7- Kills: " + entry.getValue().getKills() + " K/D: " + String.format(Locale.US, "%.2f", entry.getValue().getKDR())));
         }
     }
 
@@ -329,11 +329,11 @@ public class KitPvpManager {
         plugin.getServer().getScheduler().scheduleRepeatingTask(plugin, () -> {
             long now = System.currentTimeMillis();
             for (UUID id : new ArrayList<>(lastActivity.keySet())) {
-                Player player = plugin.getServer().getPlayer(id);
-                if (player == null || !isKitWorld(player)) continue;
+                Optional<Player> player = plugin.getServer().getPlayer(id);
+                if (player.isEmpty() || !isKitWorld(player.orElse(null))) continue;
                 long last = lastActivity.getOrDefault(id, now);
                 if (now - last > afkSeconds * 1000L) {
-                    sendToSelection(player);
+                    sendToSelection(player.orElse(null));
                 }
             }
         }, 20);
