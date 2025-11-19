@@ -26,6 +26,8 @@ import com.zombielooter.gui.GUIFormListener;
 import com.zombielooter.gui.GUITextManager;
 import com.zombielooter.market.MarketCommand;
 import com.zombielooter.market.MarketManager;
+import com.zombielooter.mail.MailCommand;
+import com.zombielooter.mail.MailManager;
 import com.zombielooter.npc.NPCListener;
 import com.zombielooter.npc.NPCManager;
 import com.zombielooter.npc.VendorNPC;
@@ -85,6 +87,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
     private LeaderboardManager leaderboardManager;
     private KitPvpManager kitPvpManager;
     private DailyRewardManager dailyRewardManager;
+    private MailManager mailManager;
 
     private int marqueeTaskId = -1;
 
@@ -121,6 +124,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
 
             xpManager        = new XPManager(this);
             economyManager   = new EconomyManager(this);
+            mailManager      = new MailManager(this);
             vendorManager    = new VendorManager(this, economyManager);
             npcManager       = new NPCManager(this);
             powerManager     = new PowerManager(this);
@@ -129,7 +133,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
             factionManager   = new FactionManager(this);
             claimManager     = new ClaimManager(this);
             questManager     = new QuestManager(this);
-            marketManager    = new MarketManager(this);
+            marketManager    = new MarketManager(this, mailManager, economyManager);
 
             bossEventManager     = new BossEventManager(this);
             infectionManager     = new InfectionManager(this);
@@ -164,6 +168,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
         tryRegisterCommand("lootpreview", new LootPreviewCommand(this, lootManager));
         tryRegisterCommand("f",       new FactionCommand(this));
         tryRegisterCommand("zmarket", new MarketCommand(this));
+        tryRegisterCommand("mail",    new MailCommand(this, mailManager));
         tryRegisterCommand("quest",   new QuestCommand(this));
         tryRegisterCommand("boss",    new BossCommand(this));
         tryRegisterCommand("economy", new EconomyCommand(this));
@@ -190,6 +195,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
         saveResource("territory_buffs.yml", false);
         saveResource("kitpvp.yml", false);
         saveResource("daily_rewards.yml", false);
+        saveResource("mail.yml", false);
 
         PlaceholderAPI.INSTANCE.register(new ZombielooterPlaceholderExtension());
 
@@ -331,6 +337,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
         if (marketManager != null) marketManager.save();
         if (xpManager != null) xpManager.save();
         if (economyManager != null) economyManager.save();
+        if (mailManager != null) mailManager.save();
 
         getLogger().info("💀 ZombieLooterX disabled.");
     }
@@ -399,6 +406,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
     public GlobalEventManager getGlobalEventManager() { return globalEventManager; }
     public InfectionManager getInfectionManager()     { return infectionManager; }
     public MarketManager getMarketManager()           { return marketManager; }
+    public MailManager getMailManager()               { return mailManager; }
     public HUDManager getHudManager()                 { return hudManager; }
     public VendorManager getVendorManager()           { return vendorManager; }
     public NPCManager getNpcManager()                 { return npcManager; }

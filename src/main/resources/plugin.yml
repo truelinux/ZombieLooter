@@ -21,8 +21,12 @@ commands:
     permission: zombielooter.faction
   zmarket:
     description: Player marketplace for trading loot
-    usage: /zmarket <list <itemId> <amount> <price>|buy <index>|view>
+    usage: /zmarket <list <itemId> <amount> <price>|listbuy <itemId> <amount> <price>|buy <index>|sell <index>|view>
     permission: zlx.market
+  mail:
+    description: View and claim market deliveries and offline trades
+    usage: /mail [view|claim <index|all>]
+    permission: zlx.mail
   quest:
     description: Quest and mission tracking
     usage: /quest <list|start <id>|progress|claim>
@@ -67,4 +71,6 @@ permissions:
   zombielooter.dailyrewards:
     default: true
   zlx.market:
+    default: true
+  zlx.mail:
     default: true

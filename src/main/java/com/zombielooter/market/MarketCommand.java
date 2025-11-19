@@ -1,4 +1,4 @@
-package com.zombielooter.market;
+﻿package com.zombielooter.market;
 
 import cn.nukkit.Player;
 import cn.nukkit.command.Command;
@@ -43,6 +43,23 @@ public class MarketCommand implements CommandExecutor {
             player.sendMessage(String.format(textManager.getText("commands.market.listed_item", "§aListed %d x %s for %d coins."), amount, itemId, price));
             return true;
         }
+        if (sub.equals("listbuy") && args.length >= 4) {
+            String itemId = args[1];
+            int amount, price;
+            try {
+                amount = Integer.parseInt(args[2]);
+                price = Integer.parseInt(args[3]);
+            } catch (Exception e) {
+                player.sendMessage("§cUsage: /zmarket listbuy <itemId> <amount> <price>");
+                return true;
+            }
+            if (plugin.getMarketManager().listBuy(player, itemId, amount, price)) {
+                player.sendMessage("§aPosted buy order. Funds reserved until filled (max 6h).");
+            } else {
+                player.sendMessage("§cNot enough funds to post that buy order.");
+            }
+            return true;
+        }
         if (sub.equals("buy") && args.length >= 2) {
             int index;
             try {
@@ -57,10 +74,26 @@ public class MarketCommand implements CommandExecutor {
                 player.sendMessage(textManager.getText("commands.market.could_not_buy", "§cCouldn't buy listing."));
             return true;
         }
+        if (sub.equals("sell") && args.length >= 2) {
+            int index;
+            try {
+                index = Integer.parseInt(args[1]);
+            } catch (Exception e) {
+                player.sendMessage("§cUsage: /zmarket sell <index>");
+                return true;
+            }
+            if (plugin.getMarketManager().sellToBuyListing(player, index))
+                player.sendMessage("§aSold into the buy order. Payment delivered.");
+            else
+                player.sendMessage("§cCould not sell into that buy order.");
+            return true;
+        }
         if (sub.equals("view")) {
             int i = 0;
             for (MarketManager.Listing l : plugin.getMarketManager().getListings()) {
-                player.sendMessage(String.format(textManager.getText("commands.market.view_listing_format", "§7#%d §f%dx §e%s §7for §6%d §7coins"), i, l.amount, l.itemId, l.price));
+                String type = l.type == MarketManager.Type.BUY ? "BUY" : "SELL";
+                long minutesLeft = Math.max(0, (l.expiresAt - System.currentTimeMillis()) / 60000);
+                player.sendMessage(String.format("§7#%d [§e%s§7] §f%dx §e%s §7for §6%d §7coins §8(%dm left)%s", i, type, l.amount, l.itemId, l.price, minutesLeft, l.fake ? " §8[state:system]" : ""));
                 i++;
             }
             return true;

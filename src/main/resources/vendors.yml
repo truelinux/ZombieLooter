@@ -1,8 +1,8 @@
-# Defines multiple NPC vendors, their appearance, limits, and items.
+﻿# Defines multiple NPC vendors, their appearance, limits, and items.
 
 vendors:
   arms_dealer:
-    name: "§l§cArms Dealer"
+    name: "&l&cArms Dealer"
     # Skin name used by the server to set the NPC's appearance.
     skin: "arms_dealer_skin"
     # Max number of items a player can buy/sell from this vendor per day.
@@ -11,36 +11,122 @@ vendors:
     items:
       ammo_pistol:
         id: "minecraft:iron_nugget"
-        name: "§fPistol Ammo"
+        name: "&fPistol Ammo"
         sellPrice: 5
         buyPrice: 8
       ammo_rifle:
         id: "minecraft:gold_nugget"
-        name: "§fRifle Ammo"
+        name: "&fRifle Ammo"
         sellPrice: 12
         buyPrice: 18
-      military_grade_alloy:
-        id: "minecraft:netherite_ingot"
-        name: "§5Military-Grade Alloy"
-        buyPrice: 1500
+      makeshift_arrows:
+        id: "minecraft:arrow"
+        name: "&7Makeshift Ammo"
+        sellPrice: 3
+        buyPrice: 6
+      jury_rigged_smg:
+        id: "minecraft:crossbow"
+        name: "&9Jury-Rigged SMG"
+        sellPrice: 240
+        buyPrice: 600
+      riot_shield:
+        id: "minecraft:shield"
+        name: "&bRiot Shield"
+        sellPrice: 180
+        buyPrice: 450
+      kevlar_vest:
+        id: "minecraft:iron_chestplate"
+        name: "&bKevlar Vest"
+        sellPrice: 210
+        buyPrice: 520
 
   scavenger:
-    name: "§l§eScavenger"
+    name: "&l&eScavenger"
     skin: "scavenger_skin"
     daily-buy-limit: 100
     daily-sell-limit: 1000
     items:
       medkit:
         id: "minecraft:apple"
-        name: "§cMedkit"
+        name: "&cMedkit"
         sellPrice: 75
         buyPrice: 100
       zombie_eye:
         id: "minecraft:fermented_spider_eye"
-        name: "§aMutated Eyeball"
+        name: "&aMutated Eyeball"
         sellPrice: 15
       scrap_metal:
         id: "minecraft:iron_ingot"
-        name: "§7Scrap Metal"
+        name: "&7Scrap Metal"
         sellPrice: 25
         buyPrice: 40
+      scrap_wiring:
+        id: "minecraft:string"
+        name: "&7Scrap Wiring"
+        sellPrice: 12
+        buyPrice: 35
+      torn_fabrics:
+        id: "minecraft:leather"
+        name: "&7Torn Fabrics"
+        sellPrice: 10
+        buyPrice: 30
+      rations_pack:
+        id: "minecraft:bread"
+        name: "&7Rations Pack"
+        sellPrice: 6
+        buyPrice: 20
+      cash_bundle:
+        id: "minecraft:paper"
+        name: "&7Cash Bundle ($25)"
+        sellPrice: 25
+      minted_gold_bar:
+        id: "minecraft:gold_ingot"
+        name: "&6Minted Gold Bar"
+        sellPrice: 150
+        buyPrice: 250
+      nano_circuit:
+        id: "minecraft:prismarine_shard"
+        name: "&aNano Circuit"
+        sellPrice: 350
+        buyPrice: 650
+      reinforced_blade:
+        id: "minecraft:iron_sword"
+        name: "&bReinforced Blade"
+        sellPrice: 160
+        buyPrice: 380
+
+  black_market:
+    name: "&5&lBlack Market"
+    skin: "black_market_skin"
+    daily-buy-limit: 75
+    daily-sell-limit: 300
+    items:
+      black_market_chip:
+        id: "minecraft:emerald"
+        name: "&aBlack-Market Chip"
+        sellPrice: 220
+      ancient_alloy:
+        id: "minecraft:netherite_scrap"
+        name: "&6Ancient Alloy"
+        sellPrice: 900
+        buyPrice: 1400
+      emergency_defib:
+        id: "minecraft:totem_of_undying"
+        name: "&eEmergency Defib"
+        sellPrice: 900
+        buyPrice: 2400
+      combat_stims:
+        id: "minecraft:enchanted_golden_apple"
+        name: "&dCombat Stims"
+        sellPrice: 350
+        buyPrice: 900
+      silent_hunter:
+        id: "minecraft:bow"
+        name: "&dSilent Hunter"
+        sellPrice: 400
+        buyPrice: 1200
+      sunstrike:
+        id: "minecraft:diamond_sword"
+        name: "&6Sunstrike"
+        sellPrice: 750
+        buyPrice: 2000
