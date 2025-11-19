@@ -246,7 +246,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
     private String scrollingBuffer;
 
     private void rotateBuffer() {
-        if (scrollingBuffer.startsWith("&") && scrollingBuffer.length() > 2) {
+        if (scrollingBuffer.startsWith("§") && scrollingBuffer.length() > 2) {
             scrollingBuffer = scrollingBuffer.substring(2) + scrollingBuffer.substring(0, 2);
         } else {
             scrollingBuffer = scrollingBuffer.substring(1) + scrollingBuffer.charAt(0);
@@ -264,7 +264,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
         String lastColor = "";
 
         for (int i = 0; i < text.length() - 1; i++) {
-            if (text.charAt(i) == '&') {
+            if (text.charAt(i) == '§') {
                 String code = text.substring(i, i + 2);
                 char type = code.charAt(1);
 
@@ -290,7 +290,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
     /**
      * Tracks persistent formatting:
      * - Last color wins
-     * - Formatting codes (&l, &n, &o, &k) stack
+     * - Formatting codes (§l, §n, §o, §k) stack
      */
     private String updateActive(String existing, String code) {
         char type = code.charAt(1);
@@ -357,12 +357,12 @@ public class ZombieLooterX extends PluginBase implements Listener {
                 int listingCount = marketManager != null ? marketManager.getListings().size() : 0;
                 int infectionLevel = infectionManager != null ? infectionManager.getInfectionLevel() : 0;
 
-                String message = "&l&k==&r&l&fPlayers \ue130: &a" + playerCount
-                        + " &7| &fListings: &b" + listingCount
-                        + " &7| &fInfection: &c" + infectionLevel + "%";
+                String message = "§l§k==§r§l§fPlayers \ue130: §a" + playerCount
+                        + " §7| §fListings: §b" + listingCount
+                        + " §7| §fInfection: §c" + infectionLevel + "%";
 
                 for (Player player : getServer().getOnlinePlayers().values()) {
-                    player.sendActionBar(TextFormat.colorize(message));
+                    player.sendActionBar(message);
                 }
             }
         }, 1).getTaskId();
