@@ -1,4 +1,4 @@
-﻿package com.zombielooter.market;
+package com.zombielooter.market;
 
 import cn.nukkit.Player;
 import cn.nukkit.inventory.fake.FakeInventory;
@@ -337,8 +337,8 @@ public class MarketManager {
     }
 
     private String resolveName(UUID uuid) {
-        Player p = plugin.getServer().getPlayer(uuid);
-        if (p != null) return p.getName();
+        Optional<Player> p = plugin.getServer().getPlayer(uuid);
+        if (p.isPresent()) return p.get().getName();
         String u = uuid.toString();
         return "Player-" + u.substring(0, 5);
     }

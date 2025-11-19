@@ -362,7 +362,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
                         + " &7| &fInfection: &c" + infectionLevel + "%";
 
                 for (Player player : getServer().getOnlinePlayers().values()) {
-                    player.sendActionBar(message);
+                    player.sendActionBar(TextFormat.colorize(message));
                 }
             }
         }, 1).getTaskId();
