@@ -36,18 +36,15 @@ public class LootPreviewCommand implements CommandExecutor {
             return true;
         }
 
-        plugin.getServer().getScheduler().scheduleDelayedTask(InternalPlugin.INSTANCE, () -> {
-            Player player = (Player) sender;
-            FakeInventory inv = new FakeInventory(FakeInventoryType.ENDER_CHEST, "Loot");
+        Player player = (Player) sender;
+        FakeInventory inv = new FakeInventory(FakeInventoryType.ENDER_CHEST, "Loot");
 
-            inv.setDefaultItemHandler((i, slot, item, item2, event)->{
-                if(item != null) event.setCancelled();
-            });
-            inv.setContents(lootManager.getAllPossibleLootItems());
+        inv.setDefaultItemHandler((i, slot, item, item2, event)->{
+            if(item != null) event.setCancelled();
+        });
+        inv.setContents(lootManager.getAllPossibleLootItems());
 
-            player.addWindow(inv);
-        }, 20);
-
+        plugin.getServer().getScheduler().scheduleDelayedTask(plugin, () -> player.addWindow(inv), 20);
 
         return true;
     }

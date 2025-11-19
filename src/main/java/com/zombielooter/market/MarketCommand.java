@@ -89,13 +89,11 @@ public class MarketCommand implements CommandExecutor {
             return true;
         }
         if (sub.equals("view")) {
-            int i = 0;
-            for (MarketManager.Listing l : plugin.getMarketManager().getListings()) {
-                String type = l.type == MarketManager.Type.BUY ? "BUY" : "SELL";
-                long minutesLeft = Math.max(0, (l.expiresAt - System.currentTimeMillis()) / 60000);
-                player.sendMessage(String.format("§7#%d [§e%s§7] §f%dx §e%s §7for §6%d §7coins §8(%dm left)%s", i, type, l.amount, l.itemId, l.price, minutesLeft, l.fake ? " §8[state:system]" : ""));
-                i++;
+            int page = 0;
+            if (args.length >= 2) {
+                try { page = Integer.parseInt(args[1]) - 1; } catch (Exception ignored) {}
             }
+            plugin.getMarketManager().openListingInventory(player, page);
             return true;
         }
         player.sendMessage(textManager.getText("commands.market.unknown_subcommand", "§cUnknown subcommand."));
