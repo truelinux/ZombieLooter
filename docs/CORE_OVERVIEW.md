@@ -16,9 +16,9 @@
 - **UI Layer**: GUI text, HUD, and menu managers power in-game forms/menus for factions, vendors, bosses, and markets. 【F:src/main/java/com/zombielooter/gui/GUITextManager.java†L1-L140】【F:src/main/java/com/zombielooter/gui/UIManager.java†L1-L200】
 
 ## Immediate Improvement Opportunities
-1) **Reduce disk churn in economy saves**: `EconomyManager` writes the config file on every balance change; batching saves (tick task or dirty flag) would lower I/O without risking loss because a flush helper already exists. 【F:src/main/java/com/zombielooter/economy/EconomyManager.java†L39-L75】
-2) **Quest persistence threading**: Quest progress loading/saving runs on async threads while sharing a single `Config` instance; wrap access or isolate per-thread configs to avoid concurrent writes from autosave and manual triggers. 【F:src/main/java/com/zombielooter/quests/QuestManager.java†L74-L121】【F:src/main/java/com/zombielooter/quests/QuestManager.java†L121-L205】
-3) **Join logging noise**: `PlayerEvents` logs every `ContainerOpenPacket`, which will spam logs in normal play; gate behind debug config or remove for production. 【F:src/main/java/com/zombielooter/events/PlayerEvents.java†L18-L27】
-4) **Boss bar lifecycle**: Marquee task recreates/updates bars each tick but boss bars are only destroyed on plugin disable; cleaning up on player quit avoids orphaned bars. 【F:src/main/java/com/zombielooter/ZombieLooterX.java†L161-L213】【F:src/main/java/com/zombielooter/events/PlayerEvents.java†L21-L35】
-5) **Data validation**: Several loaders swallow malformed data (e.g., economy UUID parse, quest objectives) without surfacing actionable warnings; emit structured warnings per key to simplify live debugging. 【F:src/main/java/com/zombielooter/economy/EconomyManager.java†L23-L41】【F:src/main/java/com/zombielooter/quests/QuestManager.java†L52-L101】
+- Economy saves now batch updates with a dirty flag and periodic flush task, cutting disk churn while still forcing a full snapshot on plugin shutdown. `src/main/java/com/zombielooter/economy/EconomyManager.java`
+- Quest progress access is synchronized around the shared `Config`; async load/save copies data with validation to avoid concurrent writes and corrupt counters. `src/main/java/com/zombielooter/quests/QuestManager.java`
+- Container-open packet logging is gated behind `debug.log-container-open-packets` (default false) to keep production logs clean. `src/main/java/com/zombielooter/events/PlayerEvents.java` `src/main/resources/config.yml`
+- Boss bars are destroyed on player quit to avoid orphaned marquee instances. `src/main/java/com/zombielooter/events/PlayerEvents.java`
+- Economy and quest loaders emit warnings for malformed UUIDs/rewards/counts so bad data can be fixed quickly. `src/main/java/com/zombielooter/economy/EconomyManager.java` `src/main/java/com/zombielooter/quests/QuestManager.java`
 

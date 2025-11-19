@@ -28,16 +28,17 @@ public class QuestManager implements Listener {
     private final Map<String, Quest> quests = new HashMap<>();
     private final Map<UUID, Map<String, QuestProgress>> progress = new HashMap<>();
     private Config progressConfig;
+    private final Object progressLock = new Object();
 
     public QuestManager(ZombieLooterX plugin) {
         this.plugin = plugin;
         load();
         loadProgress();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
-        
+
         // Auto-save progress every 5 minutes
-        plugin.getServer().getScheduler().scheduleDelayedRepeatingTask(plugin, 
-            () -> saveProgress(), 20 * 60 * 5, 20 * 60 * 5);
+        plugin.getServer().getScheduler().scheduleDelayedRepeatingTask(plugin,
+                this::saveProgress, 20 * 60 * 5, 20 * 60 * 5);
     }
 
     /** Load quests from quests.yml */
@@ -62,7 +63,13 @@ public class QuestManager implements Listener {
 
             String id = String.valueOf(qMap.getOrDefault("id", UUID.randomUUID().toString()));
             String name = String.valueOf(qMap.getOrDefault("name", "Unnamed Quest"));
-            long reward = ((Number) qMap.getOrDefault("reward", 50)).longValue();
+            Object rewardNode = qMap.get("reward");
+            long reward = 50;
+            if (rewardNode instanceof Number number) {
+                reward = number.longValue();
+            } else if (rewardNode != null) {
+                plugin.getLogger().warning("Invalid reward for quest '" + id + "' (expected number). Defaulting to 50.");
+            }
 
             Quest q = new Quest(id, name, reward);
 
@@ -77,12 +84,20 @@ public class QuestManager implements Listener {
 
                     if ("kill".equals(type)) {
                         String mob = String.valueOf(oMap.getOrDefault("mob", "zombie"));
-                        int count = ((Number) oMap.getOrDefault("count", 1)).intValue();
+                        Object rawCount = oMap.get("count");
+                        int count = 1;
+                        if (rawCount instanceof Number num) {
+                            count = num.intValue();
+                        } else if (rawCount != null) {
+                            plugin.getLogger().warning("Invalid count for quest '" + id + "' objective (expected number). Defaulting to 1.");
+                        }
                         q.addObjective(new KillObjective("kill_" + mob + "_" + count, mob, count));
                     } else {
                         plugin.getLogger().warning("⚠ Unknown objective type in quest " + id + ": " + type);
                     }
                 }
+            } else if (objList != null) {
+                plugin.getLogger().warning("Objectives for quest '" + id + "' should be a list. Skipping invalid entry.");
             }
             quests.put(id.toLowerCase(Locale.ROOT), q);
         }
@@ -107,30 +122,36 @@ public class QuestManager implements Listener {
                 if (!f.exists()) {
                     f.createNewFile();
                 }
-                progressConfig = new Config(f, Config.YAML);
-                
-                Map<String, Object> playersData = progressConfig.getSection("players").getAllMap();
-                if (playersData == null || playersData.isEmpty()) {
-                    plugin.getLogger().info("No quest progress data found (fresh start).");
-                    return;
+                Config localConfig = new Config(f, Config.YAML);
+
+                Map<String, Object> playersData = localConfig.getSection("players").getAllMap();
+                if (playersData == null) {
+                    playersData = new HashMap<>();
                 }
 
                 int loadedPlayers = 0;
                 int loadedQuests = 0;
+                Map<UUID, Map<String, QuestProgress>> loadedProgress = new HashMap<>();
 
                 for (Map.Entry<String, Object> playerEntry : playersData.entrySet()) {
                     try {
                         UUID playerId = UUID.fromString(playerEntry.getKey());
-                        
-                        if (!(playerEntry.getValue() instanceof Map)) continue;
+
+                        if (!(playerEntry.getValue() instanceof Map)) {
+                            plugin.getLogger().warning("Quest progress for player " + playerEntry.getKey() + " is not a map; skipping.");
+                            continue;
+                        }
                         Map<String, Object> questsData = (Map<String, Object>) playerEntry.getValue();
 
                         Map<String, QuestProgress> playerProgress = new HashMap<>();
 
                         for (Map.Entry<String, Object> questEntry : questsData.entrySet()) {
                             String questId = questEntry.getKey();
-                            
-                            if (!(questEntry.getValue() instanceof Map)) continue;
+
+                            if (!(questEntry.getValue() instanceof Map)) {
+                                plugin.getLogger().warning("Quest progress entry for quest '" + questId + "' is not a map; skipping.");
+                                continue;
+                            }
                             Map<String, Object> questData = (Map<String, Object>) questEntry.getValue();
 
                             QuestProgress prog = new QuestProgress();
@@ -140,9 +161,10 @@ public class QuestManager implements Listener {
                             if (countersObj instanceof Map) {
                                 Map<String, Object> counters = (Map<String, Object>) countersObj;
                                 for (Map.Entry<String, Object> counter : counters.entrySet()) {
-                                    if (counter.getValue() instanceof Number) {
-                                        prog.increment(counter.getKey(), 
-                                            ((Number) counter.getValue()).intValue());
+                                    if (counter.getValue() instanceof Number number) {
+                                        prog.increment(counter.getKey(), number.intValue());
+                                    } else if (counter.getValue() != null) {
+                                        plugin.getLogger().warning("Invalid counter value for quest '" + questId + "' player " + playerEntry.getKey() + " (not a number)");
                                     }
                                 }
                             }
@@ -151,12 +173,18 @@ public class QuestManager implements Listener {
                             loadedQuests++;
                         }
 
-                        progress.put(playerId, playerProgress);
+                        loadedProgress.put(playerId, playerProgress);
                         loadedPlayers++;
 
                     } catch (IllegalArgumentException e) {
                         plugin.getLogger().warning("Invalid UUID in quest progress: " + playerEntry.getKey());
                     }
+                }
+
+                synchronized (progressLock) {
+                    progress.clear();
+                    progress.putAll(loadedProgress);
+                    progressConfig = localConfig;
                 }
 
                 plugin.getLogger().info("✅ Loaded quest progress: " + loadedPlayers + " players, " + loadedQuests + " active quests");
@@ -173,32 +201,42 @@ public class QuestManager implements Listener {
     public void saveProgress() {
         CompletableFuture.runAsync(() -> {
             try {
+                Config cfg;
                 Map<String, Object> playersData = new LinkedHashMap<>();
 
-                for (Map.Entry<UUID, Map<String, QuestProgress>> playerEntry : progress.entrySet()) {
-                    Map<String, Object> questsData = new LinkedHashMap<>();
+                synchronized (progressLock) {
+                    cfg = this.progressConfig;
+                    for (Map.Entry<UUID, Map<String, QuestProgress>> playerEntry : progress.entrySet()) {
+                        Map<String, Object> questsData = new LinkedHashMap<>();
 
-                    for (Map.Entry<String, QuestProgress> questEntry : playerEntry.getValue().entrySet()) {
-                        Map<String, Object> questData = new LinkedHashMap<>();
-                        
-                        // Save counters
-                        Map<String, Integer> counters = questEntry.getValue().getAll();
-                        if (!counters.isEmpty()) {
-                            questData.put("counters", new LinkedHashMap<>(counters));
+                        for (Map.Entry<String, QuestProgress> questEntry : playerEntry.getValue().entrySet()) {
+                            Map<String, Object> questData = new LinkedHashMap<>();
+
+                            Map<String, Integer> counters = new LinkedHashMap<>(questEntry.getValue().getAll());
+                            if (!counters.isEmpty()) {
+                                questData.put("counters", counters);
+                            }
+
+                            questsData.put(questEntry.getKey(), questData);
                         }
 
-                        questsData.put(questEntry.getKey(), questData);
-                    }
-
-                    if (!questsData.isEmpty()) {
-                        playersData.put(playerEntry.getKey().toString(), questsData);
+                        if (!questsData.isEmpty()) {
+                            playersData.put(playerEntry.getKey().toString(), questsData);
+                        }
                     }
                 }
 
-                progressConfig.set("players", playersData);
-                progressConfig.save();
-                
-                plugin.getLogger().debug("Quest progress saved for " + progress.size() + " players");
+                if (cfg == null) {
+                    plugin.getLogger().warning("Quest progress save skipped: progressConfig not initialized yet.");
+                    return;
+                }
+
+                synchronized (progressLock) {
+                    cfg.set("players", playersData);
+                    cfg.save();
+                }
+
+                plugin.getLogger().debug("Quest progress saved for " + playersData.size() + " players");
 
             } catch (Exception e) {
                 plugin.getLogger().error("Failed to save quest progress: " + e.getMessage(), e);
@@ -209,7 +247,7 @@ public class QuestManager implements Listener {
     public void reload() {
         load();
         loadProgress();
-        plugin.getLogger().info("🔄 Quests reloaded from quests.yml");
+        plugin.getLogger().info("Quests reloaded from quests.yml");
     }
 
     public Quest getQuest(String id) {
@@ -222,32 +260,53 @@ public class QuestManager implements Listener {
     }
 
     public QuestProgress getProgress(Player p, String questId) {
-        Map<String, QuestProgress> perPlayer = progress.computeIfAbsent(p.getUniqueId(), k -> new HashMap<>());
-        return perPlayer.computeIfAbsent(questId.toLowerCase(Locale.ROOT), k -> new QuestProgress());
+        return getOrCreateProgress(p.getUniqueId(), questId.toLowerCase(Locale.ROOT));
     }
 
     /**
      * Get all active quests for a player
      */
     public Map<String, QuestProgress> getPlayerProgress(UUID playerId) {
-        return progress.getOrDefault(playerId, new HashMap<>());
+        synchronized (progressLock) {
+            Map<String, QuestProgress> perPlayer = progress.get(playerId);
+            return perPlayer == null ? new HashMap<>() : new HashMap<>(perPlayer);
+        }
+    }
+
+    private QuestProgress getOrCreateProgress(UUID playerId, String questId) {
+        synchronized (progressLock) {
+            Map<String, QuestProgress> perPlayer = progress.computeIfAbsent(playerId, k -> new HashMap<>());
+            return perPlayer.computeIfAbsent(questId.toLowerCase(Locale.ROOT), k -> new QuestProgress());
+        }
+    }
+
+    private Map<String, QuestProgress> getPlayerProgressSnapshot(UUID playerId) {
+        synchronized (progressLock) {
+            Map<String, QuestProgress> perPlayer = progress.get(playerId);
+            return perPlayer == null ? Collections.emptyMap() : new HashMap<>(perPlayer);
+        }
     }
 
     /** Try to complete quest; if done, pay reward and remove progress entry */
     public boolean completeIfReady(Player p, Quest q) {
-        QuestProgress prog = getProgress(p, q.getId());
-        if (q.isComplete(prog)) {
-            plugin.getEconomyManager().addBalance(p.getUniqueId(), (int) q.getRewardCoins());
-            p.sendMessage("§aQuest complete! Reward: §e" + q.getRewardCoins() + " coins");
-            p.sendTitle("§6Quest Complete!", "§e" + q.getName(), 10, 60, 10);
-            
-            // Remove completed quest
+        boolean completed;
+        synchronized (progressLock) {
+            QuestProgress prog = getOrCreateProgress(p.getUniqueId(), q.getId());
+            if (!q.isComplete(prog)) {
+                return false;
+            }
             Map<String, QuestProgress> perPlayer = progress.get(p.getUniqueId());
             if (perPlayer != null) {
                 perPlayer.remove(q.getId().toLowerCase(Locale.ROOT));
             }
-            
-            // Save immediately after completion
+            completed = true;
+        }
+
+        if (completed) {
+            plugin.getEconomyManager().addBalance(p.getUniqueId(), (int) q.getRewardCoins());
+            p.sendMessage("§aQuest complete! Reward: §e" + q.getRewardCoins() + " coins");
+            p.sendTitle("§6Quest Complete!", "§e" + q.getName(), 10, 60, 10);
+
             saveProgress();
             return true;
         }
@@ -261,29 +320,31 @@ public class QuestManager implements Listener {
         if (!(e.getEntity().getLastDamageCause().getEntity() instanceof Player)) return;
 
         Player killer = (Player) e.getEntity().getLastDamageCause().getEntity();
-        Map<String, QuestProgress> perPlayer = progress.get(killer.getUniqueId());
-        if (perPlayer == null || perPlayer.isEmpty()) return;
-
         boolean progressMade = false;
 
-        for (Map.Entry<String, QuestProgress> entry : perPlayer.entrySet()) {
-            Quest q = quests.get(entry.getKey());
-            if (q == null) continue;
+        synchronized (progressLock) {
+            Map<String, QuestProgress> perPlayer = progress.get(killer.getUniqueId());
+            if (perPlayer == null || perPlayer.isEmpty()) return;
 
-            for (Objective o : q.getObjectives()) {
-                if (o instanceof KillObjective) {
-                    KillObjective ko = (KillObjective) o;
-                    o.onKill(killer, "zombie", entry.getValue());
-                    progressMade = true;
+            for (Map.Entry<String, QuestProgress> entry : perPlayer.entrySet()) {
+                Quest q = quests.get(entry.getKey());
+                if (q == null) continue;
+
+                for (Objective o : q.getObjectives()) {
+                    if (o instanceof KillObjective) {
+                        o.onKill(killer, "zombie", entry.getValue());
+                        progressMade = true;
+                    }
                 }
             }
-            
-            completeIfReady(killer, q);
         }
 
-        // Save progress after kills (throttled by auto-save)
         if (progressMade) {
-            // Don't save on every kill - rely on auto-save and quit handler
+            for (Map.Entry<String, QuestProgress> entry : getPlayerProgressSnapshot(killer.getUniqueId()).entrySet()) {
+                Quest q = quests.get(entry.getKey());
+                if (q == null) continue;
+                completeIfReady(killer, q);
+            }
         }
     }
 
@@ -292,11 +353,9 @@ public class QuestManager implements Listener {
     public void onPlayerJoin(PlayerJoinEvent e) {
         // Progress will be loaded from file automatically
         UUID id = e.getPlayer().getUniqueId();
-        if (progress.containsKey(id)) {
-            int activeQuests = progress.get(id).size();
-            if (activeQuests > 0) {
-                e.getPlayer().sendMessage("§7You have §e" + activeQuests + " §7active quest(s).");
-            }
+        Map<String, QuestProgress> active = getPlayerProgress(id);
+        if (!active.isEmpty()) {
+            e.getPlayer().sendMessage("§7You have §e" + active.size() + " §7active quest(s).");
         }
     }
 

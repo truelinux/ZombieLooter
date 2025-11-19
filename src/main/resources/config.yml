@@ -10,4 +10,7 @@ horde:
   check_interval: 200      # How often to check for horde spawn (in ticks, 20 = 1 second)
 marquee: "&aZombie&cLooter&6X &fSurvival"
 
+debug:
+  log-container-open-packets: false
+
 
