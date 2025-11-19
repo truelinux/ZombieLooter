@@ -68,7 +68,7 @@ public class MailManager {
     }
 
     public void save() {
-        Map<String, Object> out = new LinkedHashMap<>();
+        LinkedHashMap<String, Object> out = new LinkedHashMap<>();
         for (Map.Entry<UUID, Mailbox> entry : mailboxes.entrySet()) {
             Map<String, Object> playerData = new LinkedHashMap<>();
             List<Map<String, Object>> inbox = new ArrayList<>();
@@ -102,10 +102,8 @@ public class MailManager {
             box.inbox.add(entry);
         } else {
             box.overflow.addLast(entry);
-            Player p = plugin.getServer().getPlayer(recipient);
-            if (p != null) {
-                p.sendMessage("§eYour mail is full. New items will stay queued until you claim some.");
-            }
+            Optional<Player> p = plugin.getServer().getPlayer(recipient);
+            p.ifPresent(player -> player.sendMessage("§eYour mail is full. New items will stay queued until you claim some."));
         }
         save();
     }

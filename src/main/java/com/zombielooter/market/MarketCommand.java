@@ -1,4 +1,4 @@
-﻿package com.zombielooter.market;
+package com.zombielooter.market;
 
 import cn.nukkit.Player;
 import cn.nukkit.command.Command;

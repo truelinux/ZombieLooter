@@ -41,7 +41,7 @@ public class LootManager {
 
             if (random.nextDouble() <= chance) {
                 for (int i = 0; i < rolls; i++) {
-                    Item item = getRandomWeightedItem((List<Map<String, Object>>) tier.getSection("items"));
+                    Item item = getRandomWeightedItem((List<Map<String, Object>>) tier.getList("items"));
                     if (item != null) {
                         entity.level.dropItem(entity.getPosition(), item);
                     }

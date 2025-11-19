@@ -155,10 +155,8 @@ public class MarketManager {
         // Deliver item to requester via mail (offline safe)
         if (!l.fake) {
             mailManager.addMail(l.seller, l.itemId, l.amount);
-            Player target = plugin.getServer().getPlayer(l.seller);
-            if (target != null) {
-                target.sendMessage("§aYour buy order was fulfilled. Check /mail.");
-            }
+            Optional<Player> target = plugin.getServer().getPlayer(l.seller);
+            target.ifPresent(player -> player.sendMessage("§aYour buy order was fulfilled. Check /mail."));
         }
 
         listings.remove(index);
