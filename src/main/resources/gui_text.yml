@@ -1,4 +1,4 @@
-gui:
+﻿gui:
   # --- Main Menus ---
   boss:
     title: "Boss Arena — Nightfall"
@@ -8,115 +8,6 @@ gui:
       - "Join Ongoing Fight"
       - "View Rewards"
   market:
-    title: "Market Exchange"
-    description: "Buy, sell, and trade items with other survivors."
-    buttons:
-      - "View Listings"
-      - "Sell Help"
-  quest:
-    title: "Quest Board"
-    description: "Take on challenges to earn coins and glory."
-    buttons:
-      - "Quest List"
-      - "Progress"
-      - "Claim Rewards"
-
-  # --- Faction Menus ---
-  faction_main:
-    title: "Faction Management"
-    description: "Manage your faction, claim land, and recruit allies."
-    buttons:
-      - "§lMy Faction Info\n§r§8View stats and members"
-      - "§lMember Management\n§r§8Invite or kick players"
-      - "§lLand Management\n§r§8Claim or unclaim land"
-      - "§lFaction Bank\n§r§8View and manage funds"
-      - "§lTeleport Home\n§r§8Warp to your faction's home"
-      - "§l§cLeave Faction\n§r§8Leave your current faction"
-      - "§l§4Disband Faction\n§r§8§cLeader Only"
-  faction_no_faction:
-    title: "Join a Faction"
-    description: "You are not currently in a faction. Join one to team up with other players!"
-    buttons:
-      - "§lCreate a Faction\n§r§8Start your own legacy"
-      - "§lView Faction List\n§r§8See all active factions"
-      - "§lAccept an Invite\n§r§8Join a waiting faction"
-  faction_members:
-    title: "Member Management"
-    description: "Invite new players or remove existing members."
-    buttons:
-      - "Invite Player"
-      - "Kick Player"
-  faction_land:
-    title: "Land Management"
-    description: "Claim new territory or give up old claims."
-    buttons:
-      - "Preview Claim"
-      - "Claim This Chunk"
-      - "Unclaim This Chunk"
-  faction_bank:
-    title: "Faction Bank"
-    buttons:
-      - "Deposit"
-      - "Withdraw"
-
-  # --- Forms & Dialogs ---
-  form_create_faction:
-    title: "Create Faction"
-    input_label: "Faction Name (3-16 chars)"
-  form_invite_player:
-    title: "Invite Player"
-    input_label: "Player's Name"
-  form_kick_player:
-    title: "Kick Player"
-    dropdown_label: "Select Member to Kick"
-  form_accept_invite:
-    title: "Accept Invite"
-    dropdown_label: "Select Faction to Join"
-  form_deposit:
-    title: "Deposit to Bank"
-    slider_label: "Amount to Deposit"
-  form_withdraw:
-    title: "Withdraw from Bank"
-    slider_label: "Amount to Withdraw"
-  form_confirm_disband:
-    title: "§cConfirm Disband"
-    content: "§4§lWARNING:§r§c Are you sure you want to disband your faction? This action is irreversible and all claims and balances will be lost."
-    confirm_button: "§4Yes, Disband"
-    cancel_button: "§aNo, Cancel"
-  form_confirm_leave:
-    title: "§cConfirm Leave"
-    content: "§cAre you sure you want to leave your faction?"
-    confirm_button: "§cYes, Leave"
-    cancel_button: "§aNo, Cancel"
-
-# --- Feedback & Command Messages ---
-feedback:
-  faction_name_empty: "§cFaction name cannot be empty."
-  no_money_to_deposit: "§cYou have no money to deposit."
-
-commands:
-  boss:
-    only_players: "§cOnly players can use boss commands."
-    no_permission: "§cNo permission."
-    available_bosses: "§6Available bosses:"
-    boss_spawned: "§aBoss spawned successfully!"
-    boss_not_found: "§cBoss not found or failed to spawn."
-    usage: "§e/boss <list|spawn <id>>"
-    usage_spawn: "§eUsage: /boss spawn <id>"
-  quest:
-    only_players: "§cOnly players can use quest commands."
-    usage_start: "§eUsage: /quest start <id>"
-    quest_not_found: "§cQuest not found."
-    started_quest_prefix: "§aStarted quest: §e"
-    no_active_quests: "§7You have no active quests. Use §e/quest list§7 to see available quests."
-    active_quests_header: "§6=== Your Active Quests ==="
-    help_header: "§6==== §lQuest Help §r§6===="
-    help_line1: "§7- Start earning awards by completing Quests."
-    help_line2: "§7- Quests refresh daily - use /quest"
-    list_entry: "§6%s§7: §f%s §8(Reward: §e%d§8)"
-    progress_objective_entry: "  §7- %s §8[%d]"
-    progress_quest_name: "§e%s:"
-  market:
     only_players: "§cPlayers only."
     usage_list: "§cUsage: /zmarket list <itemId> <amount> <price>"
     listed_item: "§aListed %d x %s for %d coins."
@@ -125,6 +16,19 @@ commands:
     could_not_buy: "§cCouldn't buy listing."
     view_listing_format: "§7#%d §f%dx §e%s §7for §6%d §7coins"
     unknown_subcommand: "§cUnknown subcommand."
+    inv_title: "&lMarket %d/%d"
+    type_buy: "&aBUY"
+    type_sell: "&bSELL"
+    lore_price: "&7Price: &6%s"
+    lore_by: "&7By: &f%s"
+    lore_time: "&7Time left: &e%sm"
+    lore_action_buy: "&aClick to buy"
+    lore_action_sell: "&aClick to sell into this order"
+    nav_prev: "&ePrevious Page"
+    nav_next: "&eNext Page"
+    nav_switch: "&bSwitch Page"
+    nav_switch_lore: "&7Jump to next page without retyping."
+    listing_failed: "&cCould not complete that listing."
   zombie:
     no_permission: "§cYou don't have permission to use this command."
     usage: "§eUsage: /zlx <reload|spawn>"
@@ -228,3 +132,5 @@ commands:
     place_in_claimed_only: "§cYou can only place a raid banner in claimed territory."
     cannot_raid_self: "§cYou cannot raid your own faction."
     cannot_destroy_banner: "§cYou cannot destroy the enemy's raid banner!"
+
+

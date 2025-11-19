@@ -1,4 +1,4 @@
-package com.zombielooter.market;
+﻿package com.zombielooter.market;
 
 import cn.nukkit.Player;
 import cn.nukkit.inventory.fake.FakeInventory;
@@ -6,9 +6,9 @@ import cn.nukkit.inventory.fake.FakeInventoryType;
 import cn.nukkit.item.Item;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.utils.Config;
-import cn.nukkit.utils.TextFormat;
 import com.zombielooter.ZombieLooterX;
 import com.zombielooter.economy.EconomyManager;
+import com.zombielooter.gui.GUITextManager;
 import com.zombielooter.mail.MailManager;
 
 import java.io.File;
@@ -46,6 +46,7 @@ public class MarketManager {
     private Config cfg;
     private final MailManager mailManager;
     private final EconomyManager economyManager;
+    private final GUITextManager text;
     private static final long SIX_HOURS_MS = 6 * 60 * 60 * 1000L;
     private static final int PAGE_SIZE = 45; // leave bottom row for navigation
     private static final String[] FAKE_VENDOR_NAMES = {
@@ -58,6 +59,7 @@ public class MarketManager {
         this.plugin = plugin;
         this.mailManager = mailManager;
         this.economyManager = economyManager;
+        this.text = plugin.getGUITextManager();
         load();
         startMaintenanceTask();
     }
@@ -177,7 +179,7 @@ public class MarketManager {
         if (!l.fake) {
             mailManager.addMail(l.seller, l.itemId, l.amount);
             Optional<Player> target = plugin.getServer().getPlayer(l.seller);
-            target.ifPresent(player -> player.sendMessage("§aYour buy order was fulfilled. Check /mail."));
+            target.ifPresent(player -> player.sendMessage("Â§aYour buy order was fulfilled. Check /mail."));
         }
 
         listings.remove(index);
@@ -238,13 +240,14 @@ public class MarketManager {
         }, 20 * 60 * 10); // every 10 minutes
     }
 
-    public void openListingInventory(Player player, int page) {
+        public void openListingInventory(Player player, int page) {
         List<Listing> snapshot = new ArrayList<>(listings);
         int totalPages = Math.max(1, (int) Math.ceil(snapshot.size() / (double) PAGE_SIZE));
         int safePage = Math.min(Math.max(page, 0), totalPages - 1);
-        FakeInventory inv = new FakeInventory(FakeInventoryType.DOUBLE_CHEST, "Market Page " + (safePage + 1) + "/" + totalPages);
+        String titleRaw = text.get("commands.market.inv_title", "§lMarket %d/%d");
+        String title = String.format(titleRaw, safePage + 1, totalPages);
+        FakeInventory inv = new FakeInventory(FakeInventoryType.DOUBLE_CHEST, title);
 
-        // Cancel all take/put and handle clicks
         inv.setDefaultItemHandler((inventory, slot, oldItem, newItem, event) -> {
             event.setCancelled();
             if (oldItem == null || !oldItem.hasCompoundTag()) return;
@@ -257,14 +260,14 @@ public class MarketManager {
             if (!tag.contains("listingIndex")) return;
             int idx = tag.getInt("listingIndex");
             if (idx < 0 || idx >= listings.size()) {
-                player.sendMessage("§cThat listing expired.");
+                player.sendMessage(text.get("commands.market.listing_expired", "§cThat listing expired."));
                 openListingInventory(player, safePage);
                 return;
             }
             Listing l = listings.get(idx);
             boolean success = l.type == Type.SELL ? buy(player, idx) : sellToBuyListing(player, idx);
             if (!success) {
-                player.sendMessage("§cCould not complete that listing.");
+                player.sendMessage(text.get("commands.market.listing_failed", "§cCould not complete that listing."));
             }
             plugin.getServer().getScheduler().scheduleDelayedTask(plugin, () -> openListingInventory(player, safePage), 2);
         });
@@ -278,15 +281,18 @@ public class MarketManager {
             if (display == null) display = Item.get("minecraft:paper");
             display.setCount(Math.min(l.amount, display.getMaxStackSize()));
 
-            String sellerName = l.fake ? (l.vendorName == null ? "Broker" : l.vendorName) : resolveName(l.seller);
+            String sellerName = l.fake ? getVendorName(l) : resolveName(l.seller);
             long minutesLeft = Math.max(0, (l.expiresAt - now) / 60000);
-            String typeLabel = l.type == Type.BUY ? "§aBUY" : "§bSELL";
-            display.setCustomName(typeLabel + " §f" + l.amount + "x " + l.itemId);
+            String typeLabel = l.type == Type.BUY ? text.get("commands.market.type_buy", "§aBUY") : text.get("commands.market.type_sell", "§bSELL");
+            String itemName = display.hasCustomName() ? display.getCustomName() : display.getName();
+            display.setCustomName(typeLabel + " §f" + l.amount + "x " + itemName);
             List<String> lore = new ArrayList<>();
-            lore.add("§7Price: §6" + l.price);
-            lore.add("§7By: §f" + sellerName + (l.fake ? " §8(system)" : ""));
-            lore.add("§7Time left: §e" + minutesLeft + "m");
-            lore.add(l.type == Type.SELL ? "§aClick to buy" : "§aClick to sell into this order");
+            lore.add(String.format(text.get("commands.market.lore_price", "§7Price: §6%s"), l.price));
+            lore.add(String.format(text.get("commands.market.lore_by", "§7By: §f%s"), sellerName));
+            lore.add(String.format(text.get("commands.market.lore_time", "§7Time left: §e%sm"), minutesLeft));
+            lore.add(l.type == Type.SELL
+                    ? text.get("commands.market.lore_action_buy", "§aClick to buy")
+                    : text.get("commands.market.lore_action_sell", "§aClick to sell into this order"));
             display.setLore(lore.toArray(new String[0]));
             CompoundTag tag = display.hasCompoundTag() ? display.getNamedTag() : new CompoundTag();
             tag.putInt("listingIndex", i);
@@ -295,10 +301,9 @@ public class MarketManager {
             placed++;
         }
 
-        // Navigation controls
         if (safePage > 0) {
             Item prev = Item.get("minecraft:arrow");
-            prev.setCustomName(TextFormat.colorize('&', "&ePrevious Page"));
+            prev.setCustomName(text.get("commands.market.nav_prev", "§ePrevious Page"));
             CompoundTag t = new CompoundTag();
             t.putInt("navTarget", safePage - 1);
             prev.setNamedTag(t);
@@ -306,18 +311,17 @@ public class MarketManager {
         }
         if (safePage < totalPages - 1) {
             Item next = Item.get("minecraft:arrow");
-            next.setCustomName(TextFormat.colorize('&', "&eNext Page"));
+            next.setCustomName(text.get("commands.market.nav_next", "§eNext Page"));
             CompoundTag t = new CompoundTag();
             t.putInt("navTarget", safePage + 1);
             next.setNamedTag(t);
             inv.setItem(52, next);
         }
 
-        // Quick switcher (always goes to the next page, wrapping to first)
         Item switcher = Item.get("minecraft:compass");
-        switcher.setCustomName(TextFormat.colorize('&', "&bSwitch Page"));
+        switcher.setCustomName(text.get("commands.market.nav_switch", "§bSwitch Page"));
         List<String> sLore = new ArrayList<>();
-        sLore.add(TextFormat.colorize('&', "&7Jump to next page without retyping."));
+        sLore.add(text.get("commands.market.nav_switch_lore", "§7Jump to next page without retyping."));
         switcher.setLore(sLore.toArray(new String[0]));
         CompoundTag sTag = new CompoundTag();
         int wrapNext = safePage + 1 >= totalPages ? 0 : safePage + 1;
@@ -325,14 +329,25 @@ public class MarketManager {
         switcher.setNamedTag(sTag);
         inv.setItem(53, switcher);
 
-        // slight delay to ensure client opens inventory cleanly
         plugin.getServer().getScheduler().scheduleDelayedTask(plugin, () -> player.addWindow(inv), 20);
     }
 
-    private String resolveName(UUID uuid) {
-        Optional<Player> p = plugin.getServer().getPlayer(uuid);
-        if (p.isPresent()) return p.get().getName();
+    private String resolveName(UUID uuid)(UUID uuid) {
+        Player p = plugin.getServer().getPlayer(uuid);
+        if (p != null) return p.getName();
         String u = uuid.toString();
         return "Player-" + u.substring(0, 5);
     }
+
+    private String getVendorName(Listing l) {
+        if (l.vendorName != null && !l.vendorName.isEmpty()) return l.vendorName;
+        return FAKE_VENDOR_NAMES[new Random().nextInt(FAKE_VENDOR_NAMES.length)];
+    }
+
 }
+
+
+
+
+
+
