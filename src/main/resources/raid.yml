@@ -7,11 +7,11 @@ banner-defense-duration: 300 # 5 minutes
 banner-item-id: "minecraft:banner"
 
 # The name and lore for the Raid Banner item.
-banner-item-name: "§c§lRaid Banner"
+banner-item-name: "&c&lRaid Banner"
 banner-item-lore:
-  - "§7Place this in the claimed territory"
-  - "§7of a raidable faction to begin"
-  - "§7an overclaim attempt."
+  - "&7Place this in the claimed territory"
+  - "&7of a raidable faction to begin"
+  - "&7an overclaim attempt."
 
 # The cost for a faction leader to obtain a raid banner via /f raid banner.
 banner-cost: 5000

@@ -7,6 +7,7 @@ import cn.nukkit.scheduler.Task;
 import com.zombielooter.ZombieLooterX;
 
 import java.util.Random;
+import cn.nukkit.utils.TextFormat;
 
 public class GlobalEventManager {
     private final ZombieLooterX plugin;
@@ -47,27 +48,27 @@ public class GlobalEventManager {
         bloodMoon = true;
         plugin.getConfig().set("horde.spawn_chance", plugin.getConfig().getDouble("horde.spawn_chance", 0.07) * 2.0);
         plugin.saveConfig();
-        broadcast("§4☾ Blood Moon rises! Hordes are more frequent tonight...");
+        broadcast("&4☾ Blood Moon rises! Hordes are more frequent tonight...");
         plugin.getServer().getScheduler().scheduleDelayedTask(plugin, () -> {
             bloodMoon = false;
             // restore default by halving back (simple)
             plugin.getConfig().set("horde.spawn_chance", plugin.getConfig().getDouble("horde.spawn_chance", 0.07) / 2.0);
             plugin.saveConfig();
-            broadcast("§7☽ Dawn breaks. The Blood Moon fades.");
+            broadcast("&7☽ Dawn breaks. The Blood Moon fades.");
         }, 20 * 60 * 6); // 6 minutes
     }
 
     private void startFog(Level level) {
         fog = true;
-        broadcast("§7🌫 A thick fog rolls in...");
+        broadcast("&7🌫 A thick fog rolls in...");
         plugin.getServer().getScheduler().scheduleDelayedTask(plugin, () -> {
             fog = false;
-            broadcast("§7🌤 The fog clears.");
+            broadcast("&7🌤 The fog clears.");
         }, 20 * 60 * 4);
     }
 
     private void broadcast(String msg) {
-        for (Player p : plugin.getServer().getOnlinePlayers().values()) p.sendMessage(msg);
+        for (Player p : plugin.getServer().getOnlinePlayers().values()) p.sendMessage(TextFormat.colorize('&', msg));
     }
 
     public boolean isBloodMoon() { return bloodMoon; }

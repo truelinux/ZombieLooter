@@ -7,6 +7,7 @@ import com.zombielooter.ZombieLooterX;
 
 import java.io.File;
 import java.util.*;
+import cn.nukkit.utils.TextFormat;
 
 /**
  * Lightweight offline mail storage. Items stay persisted until claimed.
@@ -103,7 +104,7 @@ public class MailManager {
         } else {
             box.overflow.addLast(entry);
             Optional<Player> p = plugin.getServer().getPlayer(recipient);
-            p.ifPresent(player -> player.sendMessage("§eYour mail is full. New items will stay queued until you claim some."));
+            p.ifPresent(player -> player.sendMessage(TextFormat.colorize('&', "&eYour mail is full. New items will stay queued until you claim some.")));
         }
         save();
     }
@@ -118,7 +119,7 @@ public class MailManager {
                 claimed++;
                 it.remove();
             } else {
-                player.sendMessage("§cInventory full. Claim space before taking more mail.");
+                player.sendMessage(TextFormat.colorize('&', "&cInventory full. Claim space before taking more mail."));
                 break;
             }
         }
@@ -131,7 +132,7 @@ public class MailManager {
     public void claimSingle(Player player, int index) {
         Mailbox box = getMailbox(player.getUniqueId());
         if (index < 0 || index >= box.inbox.size()) {
-            player.sendMessage("§cInvalid mail index.");
+            player.sendMessage(TextFormat.colorize('&', "&cInvalid mail index."));
             return;
         }
         MailEntry entry = box.inbox.get(index);
@@ -139,9 +140,9 @@ public class MailManager {
             box.inbox.remove(index);
             refillFromOverflow(box);
             save();
-            player.sendMessage("§aClaimed mail #" + index + ".");
+            player.sendMessage(TextFormat.colorize('&', "&aClaimed mail #" + index + "."));
         } else {
-            player.sendMessage("§cInventory full. Free up space and try again.");
+            player.sendMessage(TextFormat.colorize('&', "&cInventory full. Free up space and try again."));
         }
     }
 

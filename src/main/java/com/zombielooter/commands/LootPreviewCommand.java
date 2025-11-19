@@ -18,6 +18,7 @@ import com.zombielooter.ZombieLooterX;
 
 import java.util.List;
 import java.util.Map;
+import cn.nukkit.utils.TextFormat;
 
 public class LootPreviewCommand implements CommandExecutor {
 
@@ -32,7 +33,7 @@ public class LootPreviewCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage("Players only.");
+            sender.sendMessage(TextFormat.colorize('&', "Players only."));
             return true;
         }
 

@@ -16,6 +16,7 @@ import com.zombielooter.factions.Faction;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import cn.nukkit.utils.TextFormat;
 
 public class PvPListener implements Listener {
     private final ZombieLooterX plugin;
@@ -52,7 +53,7 @@ public class PvPListener implements Listener {
 
         if (!pvpAllowed || safe) {
             e.setCancelled();
-            damager.sendTip("§cPvP disabled in this zone.");
+            damager.sendTip("&cPvP disabled in this zone.");
             return;
         }
 
@@ -63,7 +64,7 @@ public class PvPListener implements Listener {
     public void onBlockPlace(BlockPlaceEvent event) {
         Player p = event.getPlayer();
         if (!zones.canBuild(event.getBlock().getLocation())) {
-            event.setCancelled(); p.sendTip("§cYou cannot build here.");
+            event.setCancelled(); p.sendTip("&cYou cannot build here.");
         }
     }
 
@@ -71,7 +72,7 @@ public class PvPListener implements Listener {
     public void onBlockBreak(BlockBreakEvent event) {
         Player p = event.getPlayer();
         if (!zones.canBuild(event.getBlock().getLocation())) {
-            event.setCancelled(); p.sendTip("§cYou cannot break blocks here.");
+            event.setCancelled(); p.sendTip("&cYou cannot break blocks here.");
         }
     }
 
@@ -82,7 +83,7 @@ public class PvPListener implements Listener {
             Block b = event.getBlock();
             if (b != null && b.getId() == Block.ENDER_CHEST) {
                 event.setCancelled();
-                p.sendTip("§7Ender chests are disabled in this area.");
+                p.sendTip("&7Ender chests are disabled in this area.");
             }
         }
     }
@@ -104,11 +105,11 @@ public class PvPListener implements Listener {
         if ((last == null && currentRegionName != null) || (last != null && !last.equals(currentRegionName))) {
             lastRegion.put(p.getUniqueId(), currentRegionName);
             if (r == null) {
-                p.sendTitle("§7Wilderness", "§8Build: allowed  •  PvP: depends", 10, 40, 10);
+                p.sendTitle(TextFormat.colorize('&', "&7Wilderness"), TextFormat.colorize('&', "&8Build: allowed  •  PvP: depends"), 10, 40, 10);
             } else {
-                String pvp = r.getFlag("pvp", false) ? "§cON" : "§aOFF";
-                String build = r.getFlag("build", true) ? "§aallowed" : "§cdenied";
-                p.sendTitle("§6" + r.getName(), "§ePvP: " + pvp + " §7• §eBuild: " + build, 10, 40, 10);
+                String pvp = r.getFlag("pvp", false) ? "&cON" : "&aOFF";
+                String build = r.getFlag("build", true) ? "&aallowed" : "&cdenied";
+                p.sendTitle(TextFormat.colorize('&', "&6" + r.getName()), TextFormat.colorize('&', "&ePvP: " + pvp + " &7• &eBuild: " + build), 10, 40, 10);
             }
         }
 
@@ -120,7 +121,7 @@ public class PvPListener implements Listener {
         if (!currentFactionName.equals(lastFaction)) {
             lastFactionClaim.put(p.getUniqueId(), currentFactionName);
             if (currentFaction != null && plugin.getRaidManager().isFactionRaidable(currentFaction.getName())) {
-                p.sendTitle("§c§lDANGER", "§eEntering raidable territory of " + currentFaction.getName(), 10, 60, 20);
+                p.sendTitle(TextFormat.colorize('&', "&c&lDANGER"), TextFormat.colorize('&', "&eEntering raidable territory of " + currentFaction.getName()), 10, 60, 20);
             }
         }
     }

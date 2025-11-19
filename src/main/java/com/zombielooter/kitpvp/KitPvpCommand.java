@@ -4,6 +4,7 @@ import cn.nukkit.Player;
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandExecutor;
 import cn.nukkit.command.CommandSender;
+import cn.nukkit.utils.TextFormat;
 
 /**
  * /kitpvp join|leave|leaderboard command.
@@ -19,7 +20,7 @@ public class KitPvpCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage("Players only.");
+            sender.sendMessage(TextFormat.colorize('&', "Players only."));
             return true;
         }
         Player player = (Player) sender;

@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import cn.nukkit.utils.TextFormat;
 
 public class VendorManager {
 
@@ -76,7 +77,7 @@ public class VendorManager {
 
         PlayerVendorStats stats = getPlayerStats(player);
         if (stats.getBoughtAmount(vendorId) + amount > vendor.getDailyBuyLimit()) {
-            player.sendMessage("§cYou have reached your daily buy limit for this vendor.");
+            player.sendMessage(TextFormat.colorize('&', "&cYou have reached your daily buy limit for this vendor."));
             return false;
         }
 
@@ -98,7 +99,7 @@ public class VendorManager {
 
         PlayerVendorStats stats = getPlayerStats(player);
         if (stats.getSoldAmount(vendorId) + amount > vendor.getDailySellLimit()) {
-            player.sendMessage("§cYou have reached your daily sell limit for this vendor.");
+            player.sendMessage(TextFormat.colorize('&', "&cYou have reached your daily sell limit for this vendor."));
             return false;
         }
 

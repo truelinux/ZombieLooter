@@ -20,6 +20,7 @@ import cn.nukkit.scheduler.Task;
 import cn.nukkit.utils.Config;
 
 import java.util.Random;
+import cn.nukkit.utils.TextFormat;
 
 public class ZombieSpawner implements Listener {
 
@@ -65,7 +66,7 @@ public class ZombieSpawner implements Listener {
      */
     public void reloadConfigCommand(CommandSender sender) {
         loadConfig();
-        sender.sendMessage("§aZombieLooterX configuration reloaded successfully!");
+        sender.sendMessage(TextFormat.colorize('&', "&aZombieLooterX configuration reloaded successfully!"));
     }
 
     /**
@@ -89,7 +90,7 @@ public class ZombieSpawner implements Listener {
                         // Sound & particle feedback
                         level.addSound(player.getPosition(), Sound.MOB_ZOMBIE_SAY, 1, 1);
                         level.addParticleEffect(player.getPosition(), ParticleEffect.CAMPFIRE_SMOKE_TALL);
-                        player.sendTitle("§c⚠ HORDE APPROACHING ⚠", "§7You hear screams in the dark...", 10, 60, 10);
+                        player.sendTitle(TextFormat.colorize('&', "&c⚠ HORDE APPROACHING ⚠"), TextFormat.colorize('&', "&7You hear screams in the dark..."), 10, 60, 10);
                         plugin.getLogger().info("🌙 Horde spawned near " + player.getName());
                     }
                 }
@@ -135,7 +136,7 @@ public class ZombieSpawner implements Listener {
             double offsetX = random.nextDouble() * 4 - 2;
             double offsetZ = random.nextDouble() * 4 - 2;
             Vector3 spawnPos = new Vector3(safeSpot.getX() + offsetX, safeSpot.getY(), safeSpot.getZ() + offsetZ);
-            spawnZombie(level, spawnPos, "§2Infected");
+            spawnZombie(level, spawnPos, "&2Infected");
         }
 
         // Horde feedback effects
@@ -165,13 +166,13 @@ public class ZombieSpawner implements Listener {
                 double offsetX = random.nextDouble() * 4 - 2;
                 double offsetZ = random.nextDouble() * 4 - 2;
                 Vector3 spawnPos = new Vector3(safeSpot.getX() + offsetX, safeSpot.getY(), safeSpot.getZ() + offsetZ);
-                spawnZombie(level, spawnPos, "§4Purge Zombie");
+                spawnZombie(level, spawnPos, "&4Purge Zombie");
             }
 
             // Effects
             level.addSound(safeSpot, Sound.MOB_ZOMBIE_UNFECT, 1, 1);
             level.addParticleEffect(safeSpot, ParticleEffect.HUGE_EXPLOSION_LEVEL);
-            player.sendMessage("§4☣ A purge horde has appeared nearby!");
+            player.sendMessage(TextFormat.colorize('&', "&4☣ A purge horde has appeared nearby!"));
         }
     }
 

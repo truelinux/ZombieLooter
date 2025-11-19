@@ -22,7 +22,7 @@ public final class QuestMenuUI {
         SimpleForm form = new SimpleForm(title, desc);
         if (buttons != null) {
             for (String label : buttons) {
-                form.addButton("§l" + label);
+                form.addButton("&l" + label);
             }
         }
 
@@ -37,7 +37,7 @@ public final class QuestMenuUI {
             case 1 -> player.getServer().executeCommand(player, "quest progress");
             case 2 -> player.getServer().executeCommand(player, "quest claim");
             case 3 -> player.getServer().executeCommand(player, "quest help");
-            default -> FeedbackUtil.popup(player, "§7Menu closed.");
+            default -> FeedbackUtil.popup(player, "&7Menu closed.");
         }
         player.getLevel().addSound(player, Sound.CLICK_OFF_NETHER_WOOD_BUTTON);
     }

@@ -13,6 +13,7 @@ import com.zombielooter.ZombieLooterX;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import cn.nukkit.utils.TextFormat;
 
 /**
  * QuestManager
@@ -304,8 +305,8 @@ public class QuestManager implements Listener {
 
         if (completed) {
             plugin.getEconomyManager().addBalance(p.getUniqueId(), (int) q.getRewardCoins());
-            p.sendMessage("§aQuest complete! Reward: §e" + q.getRewardCoins() + " coins");
-            p.sendTitle("§6Quest Complete!", "§e" + q.getName(), 10, 60, 10);
+            p.sendMessage(TextFormat.colorize('&', "&aQuest complete! Reward: &e" + q.getRewardCoins() + " coins"));
+            p.sendTitle(TextFormat.colorize('&', "&6Quest Complete!"), TextFormat.colorize('&', "&e" + q.getName()), 10, 60, 10);
 
             saveProgress();
             return true;
@@ -355,7 +356,7 @@ public class QuestManager implements Listener {
         UUID id = e.getPlayer().getUniqueId();
         Map<String, QuestProgress> active = getPlayerProgress(id);
         if (!active.isEmpty()) {
-            e.getPlayer().sendMessage("§7You have §e" + active.size() + " §7active quest(s).");
+            e.getPlayer().sendMessage(TextFormat.colorize('&', "&7You have &e" + active.size() + " &7active quest(s)."));
         }
     }
 

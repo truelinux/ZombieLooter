@@ -6,6 +6,7 @@ import com.zombielooter.ZombieLooterX;
 
 import java.io.File;
 import java.util.*;
+import cn.nukkit.utils.TextFormat;
 
 public class XPManager {
 
@@ -111,11 +112,11 @@ public class XPManager {
         int newXP = currentXP + finalAmount;
         playerXP.put(player.getUniqueId(), newXP);
 
-        player.sendMessage("§a+" + finalAmount + " XP" + (boost > 0 ? " (" + boost + "% Faction Boost)" : ""));
+        player.sendMessage(TextFormat.colorize('&', "&a+" + finalAmount + " XP" + (boost > 0 ? " (" + boost + "% Faction Boost)" : "")));
 
         int newLevel = getLevel(player.getUniqueId());
         if (newLevel > currentLevel) {
-            player.sendTitle("§b§lLEVEL UP!", "§eYou are now level " + newLevel);
+            player.sendTitle(TextFormat.colorize('&', "&b&lLEVEL UP!"), TextFormat.colorize('&', "&eYou are now level " + newLevel));
         }
     }
 

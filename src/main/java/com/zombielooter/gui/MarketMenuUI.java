@@ -3,6 +3,7 @@ package com.zombielooter.gui;
 import cn.nukkit.Player;
 import cn.nukkit.level.Sound;
 import cn.nukkit.form.window.SimpleForm;
+import cn.nukkit.utils.TextFormat;
 import com.zombielooter.ZombieLooterX;
 import java.util.List;
 
@@ -24,7 +25,7 @@ public final class MarketMenuUI {
         SimpleForm form = new SimpleForm(title, desc);
         if (buttons != null) {
             for (String label : buttons) {
-                form.addButton("§l" + label);
+                form.addButton(TextFormat.colorize('&', "&l" + label));
             }
         }
 
@@ -36,11 +37,11 @@ public final class MarketMenuUI {
         switch (index) {
             case 0 -> player.getServer().executeCommand(player, "zmarket view");
             case 1 -> {
-                FeedbackUtil.toast(player, "§6Selling Help", "§7Use /zmarket list <item> <amount> <price>");
-                FeedbackUtil.actionBar(player, "§7Example: §f/zmarket list minecraft:iron_ingot 16 250");
+                FeedbackUtil.toast(player, "&6Selling Help", "&7Use /zmarket list <item> <amount> <price>");
+                FeedbackUtil.actionBar(player, "&7Example: &f/zmarket list minecraft:iron_ingot 16 250");
             }
-            case 2 -> FeedbackUtil.popup(player, "§7Closed market.");
-            default -> FeedbackUtil.popup(player, "§7Exited.");
+            case 2 -> FeedbackUtil.popup(player, "&7Closed market.");
+            default -> FeedbackUtil.popup(player, "&7Exited.");
         }
         player.getLevel().addSound(player, Sound.CLICK_OFF_NETHER_WOOD_BUTTON);
     }

@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import cn.nukkit.utils.TextFormat;
 
 public class ClaimManager {
 
@@ -56,20 +57,20 @@ public class ClaimManager {
         int claimsHeld = getClaimCount(faction.getName());
         int requiredPower = (claimsHeld + 1) * plugin.getPowerManager().getPowerPerClaim();
         if (faction.getPower() < requiredPower) {
-            player.sendMessage(text.getText("commands.claim.no_power", "§cYour faction doesn't have enough power to claim more land!"));
-            player.sendMessage(String.format(text.getText("commands.claim.required_power", "§cRequired: %d | Current: %d"), requiredPower, faction.getPower()));
+            player.sendMessage(TextFormat.colorize('&', text.getText("commands.claim.no_power", "&cYour faction doesn't have enough power to claim more land!")));
+            player.sendMessage(TextFormat.colorize('&', String.format(text.getText("commands.claim.required_power", "&cRequired: %d | Current: %d"), requiredPower, faction.getPower())));
             return;
         }
 
         String chunkHash = String.valueOf(Level.chunkHash(player.getChunkX(), player.getChunkZ()));
         if (chunkToFaction.containsKey(chunkHash)) {
-            player.sendMessage(text.getText("commands.claim.already_claimed", "§cThis land is already claimed!"));
+            player.sendMessage(TextFormat.colorize('&', text.getText("commands.claim.already_claimed", "&cThis land is already claimed!")));
             return;
         }
 
         chunkToFaction.put(chunkHash, faction.getName());
         save();
-        player.sendMessage(text.getText("commands.claim.claim_success", "§aLand claimed successfully!"));
+        player.sendMessage(TextFormat.colorize('&', text.getText("commands.claim.claim_success", "&aLand claimed successfully!")));
     }
 
     public void forceClaimChunk(Faction faction, int chunkX, int chunkZ) {
@@ -82,13 +83,13 @@ public class ClaimManager {
         if (faction == null) return;
         String chunkHash = String.valueOf(Level.chunkHash(player.getChunkX(), player.getChunkZ()));
         if (!faction.getName().equals(chunkToFaction.get(chunkHash))) {
-            player.sendMessage(text.getText("commands.claim.not_your_land", "§cYour faction doesn't own this land!"));
+            player.sendMessage(TextFormat.colorize('&', text.getText("commands.claim.not_your_land", "&cYour faction doesn't own this land!")));
             return;
         }
 
         chunkToFaction.remove(chunkHash);
         save();
-        player.sendMessage(text.getText("commands.claim.unclaim_success", "§aLand unclaimed successfully!"));
+        player.sendMessage(TextFormat.colorize('&', text.getText("commands.claim.unclaim_success", "&aLand unclaimed successfully!")));
     }
 
     public Faction getFactionForChunk(int chunkX, int chunkZ) {
@@ -110,6 +111,6 @@ public class ClaimManager {
                 }
             }
         }
-        player.sendMessage(text.getText("commands.claim.preview", "§eDisplaying chunk border for your current location."));
+        player.sendMessage(TextFormat.colorize('&', text.getText("commands.claim.preview", "&eDisplaying chunk border for your current location.")));
     }
 }

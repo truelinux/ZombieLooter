@@ -11,6 +11,7 @@ import com.zombielooter.economy.Vendor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import cn.nukkit.utils.TextFormat;
 
 public class VendorMenuUI {
 
@@ -90,9 +91,9 @@ public class VendorMenuUI {
         }
         String itemKey = buyableItemKeys.get(itemIndex);
         if (plugin.getVendorManager().buyItem(player, vendorId, itemKey, amount)) {
-            player.sendMessage("§aPurchase successful!");
+            player.sendMessage(TextFormat.colorize('&', "&aPurchase successful!"));
         } else {
-            player.sendMessage("§cPurchase failed.");
+            player.sendMessage(TextFormat.colorize('&', "&cPurchase failed."));
         }
     }
 
@@ -108,9 +109,9 @@ public class VendorMenuUI {
         }
         String itemKey = sellableItemKeys.get(itemIndex);
         if (plugin.getVendorManager().sellItem(player, vendorId, itemKey, amount)) {
-            player.sendMessage("§aSale successful!");
+            player.sendMessage(TextFormat.colorize('&', "&aSale successful!"));
         } else {
-            player.sendMessage("§cSale failed.");
+            player.sendMessage(TextFormat.colorize('&', "&cSale failed."));
         }
     }
 }

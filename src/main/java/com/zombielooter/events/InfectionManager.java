@@ -25,7 +25,7 @@ public class InfectionManager {
                 }
                 // Trigger purge event at 100
                 if (infectionLevel >= 100) {
-                    plugin.getServer().broadcastMessage("§4☣ Global Infection reached 100%! Purge event begins!");
+                    plugin.getServer().broadcastMessage("&4☣ Global Infection reached 100%! Purge event begins!");
                     if (plugin.getZombieSpawner() != null) {
                         // spawn small hordes near all players
                         plugin.getZombieSpawner().spawnHordesNearAll(4, 6);

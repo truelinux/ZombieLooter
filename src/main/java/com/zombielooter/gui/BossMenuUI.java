@@ -24,7 +24,7 @@ public final class BossMenuUI {
         SimpleForm form = new SimpleForm(title, desc);
         if (buttons != null) {
             for (String label : buttons) {
-                form.addButton("§l" + label);
+                form.addButton("&l" + label);
             }
         }
 
@@ -38,8 +38,8 @@ public final class BossMenuUI {
             case 1 -> player.getServer().executeCommand(player, "boss join");
             case 2 -> player.getServer().executeCommand(player, "boss rewards");
             case 3 -> player.getServer().executeCommand(player, "boss leave");
-            case 4 -> FeedbackUtil.popup(player, "§7Menu closed.");
-            default -> FeedbackUtil.popup(player, "§7Exited.");
+            case 4 -> FeedbackUtil.popup(player, "&7Menu closed.");
+            default -> FeedbackUtil.popup(player, "&7Exited.");
         }
         player.getLevel().addSound(player, Sound.MOB_SHULKER_AMBIENT);
     }

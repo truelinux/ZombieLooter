@@ -7,6 +7,7 @@ import cn.nukkit.command.CommandSender;
 import com.zombielooter.ZombieLooterX;
 import com.zombielooter.gui.GUITextManager;
 import com.zombielooter.gui.MarketMenuUI;
+import cn.nukkit.utils.TextFormat;
 
 public class MarketCommand implements CommandExecutor {
     private final ZombieLooterX plugin;
@@ -20,7 +21,7 @@ public class MarketCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(textManager.getText("commands.market.only_players", "§cPlayers only."));
+            sender.sendMessage(TextFormat.colorize('&', textManager.getText("commands.market.only_players", "&cPlayers only.")));
             return true;
         }
         if (args.length == 0) {
@@ -36,11 +37,11 @@ public class MarketCommand implements CommandExecutor {
                 amount = Integer.parseInt(args[2]);
                 price = Integer.parseInt(args[3]);
             } catch (Exception e) {
-                player.sendMessage(textManager.getText("commands.market.usage_list", "§cUsage: /zmarket list <itemId> <amount> <price>"));
+                player.sendMessage(TextFormat.colorize('&', textManager.getText("commands.market.usage_list", "&cUsage: /zmarket list <itemId> <amount> <price>")));
                 return true;
             }
             plugin.getMarketManager().list(player, itemId, amount, price);
-            player.sendMessage(String.format(textManager.getText("commands.market.listed_item", "§aListed %d x %s for %d coins."), amount, itemId, price));
+            player.sendMessage(TextFormat.colorize('&', String.format(textManager.getText("commands.market.listed_item", "&aListed %d x %s for %d coins."), amount, itemId, price)));
             return true;
         }
         if (sub.equals("listbuy") && args.length >= 4) {
@@ -50,13 +51,13 @@ public class MarketCommand implements CommandExecutor {
                 amount = Integer.parseInt(args[2]);
                 price = Integer.parseInt(args[3]);
             } catch (Exception e) {
-                player.sendMessage("§cUsage: /zmarket listbuy <itemId> <amount> <price>");
+                player.sendMessage(TextFormat.colorize('&', "&cUsage: /zmarket listbuy <itemId> <amount> <price>"));
                 return true;
             }
             if (plugin.getMarketManager().listBuy(player, itemId, amount, price)) {
-                player.sendMessage("§aPosted buy order. Funds reserved until filled (max 6h).");
+                player.sendMessage(TextFormat.colorize('&', "&aPosted buy order. Funds reserved until filled (max 6h)."));
             } else {
-                player.sendMessage("§cNot enough funds to post that buy order.");
+                player.sendMessage(TextFormat.colorize('&', "&cNot enough funds to post that buy order."));
             }
             return true;
         }
@@ -65,13 +66,13 @@ public class MarketCommand implements CommandExecutor {
             try {
                 index = Integer.parseInt(args[1]);
             } catch (Exception e) {
-                player.sendMessage(textManager.getText("commands.market.usage_buy", "§cUsage: /zmarket buy <index>"));
+                player.sendMessage(TextFormat.colorize('&', textManager.getText("commands.market.usage_buy", "&cUsage: /zmarket buy <index>")));
                 return true;
             }
             if (plugin.getMarketManager().buy(player, index))
-                player.sendMessage(String.format(textManager.getText("commands.market.purchased_listing", "§aPurchased listing #%d"), index));
+                player.sendMessage(TextFormat.colorize('&', String.format(textManager.getText("commands.market.purchased_listing", "&aPurchased listing #%d"), index)));
             else
-                player.sendMessage(textManager.getText("commands.market.could_not_buy", "§cCouldn't buy listing."));
+                player.sendMessage(TextFormat.colorize('&', textManager.getText("commands.market.could_not_buy", "&cCouldn't buy listing.")));
             return true;
         }
         if (sub.equals("sell") && args.length >= 2) {
@@ -79,13 +80,13 @@ public class MarketCommand implements CommandExecutor {
             try {
                 index = Integer.parseInt(args[1]);
             } catch (Exception e) {
-                player.sendMessage("§cUsage: /zmarket sell <index>");
+                player.sendMessage(TextFormat.colorize('&', "&cUsage: /zmarket sell <index>"));
                 return true;
             }
             if (plugin.getMarketManager().sellToBuyListing(player, index))
-                player.sendMessage("§aSold into the buy order. Payment delivered.");
+                player.sendMessage(TextFormat.colorize('&', "&aSold into the buy order. Payment delivered."));
             else
-                player.sendMessage("§cCould not sell into that buy order.");
+                player.sendMessage(TextFormat.colorize('&', "&cCould not sell into that buy order."));
             return true;
         }
         if (sub.equals("view")) {
@@ -96,7 +97,7 @@ public class MarketCommand implements CommandExecutor {
             plugin.getMarketManager().openListingInventory(player, page);
             return true;
         }
-        player.sendMessage(textManager.getText("commands.market.unknown_subcommand", "§cUnknown subcommand."));
+        player.sendMessage(TextFormat.colorize('&', textManager.getText("commands.market.unknown_subcommand", "&cUnknown subcommand.")));
         return true;
     }
 }

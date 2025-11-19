@@ -94,7 +94,7 @@ public class BossEventManager {
                 return false;
             }
 
-            entity.setNameTag("§c" + name);
+            entity.setNameTag("&c" + name);
             entity.setNameTagVisible(true);
 
             if (entity instanceof EntityZombie) {

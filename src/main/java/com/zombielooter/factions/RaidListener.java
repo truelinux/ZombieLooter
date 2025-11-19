@@ -7,6 +7,7 @@ import cn.nukkit.event.block.BlockBreakEvent;
 import cn.nukkit.event.block.BlockPlaceEvent;
 import com.zombielooter.ZombieLooterX;
 import com.zombielooter.gui.GUITextManager;
+import cn.nukkit.utils.TextFormat;
 
 public class RaidListener implements Listener {
 
@@ -34,14 +35,14 @@ public class RaidListener implements Listener {
         // Prevent placing the banner in your own or unclaimed land
         Faction defendingFaction = claimManager.getFactionForChunk(event.getBlock().getChunkX(), event.getBlock().getChunkZ());
         if (defendingFaction == null) {
-            player.sendMessage(text.getText("commands.raid_listener.place_in_claimed_only", "§cYou can only place a raid banner in claimed territory."));
+            player.sendMessage(TextFormat.colorize('&', text.getText("commands.raid_listener.place_in_claimed_only", "&cYou can only place a raid banner in claimed territory.")));
             event.setCancelled(true);
             return;
         }
 
         Faction attackingFaction = factionManager.getFactionByPlayer(player.getUniqueId());
         if (attackingFaction == null || attackingFaction.equals(defendingFaction)) {
-            player.sendMessage(text.getText("commands.raid_listener.cannot_raid_self", "§cYou cannot raid your own faction."));
+            player.sendMessage(TextFormat.colorize('&', text.getText("commands.raid_listener.cannot_raid_self", "&cYou cannot raid your own faction.")));
             event.setCancelled(true);
             return;
         }
@@ -64,7 +65,7 @@ public class RaidListener implements Listener {
 
             // Only members of the defending faction can destroy the banner
             if (playerFaction == null || !playerFaction.equals(activeRaid.defender)) {
-                player.sendMessage(text.getText("commands.raid_listener.cannot_destroy_banner", "§cYou cannot destroy the enemy's raid banner!"));
+                player.sendMessage(TextFormat.colorize('&', text.getText("commands.raid_listener.cannot_destroy_banner", "&cYou cannot destroy the enemy's raid banner!")));
                 event.setCancelled(true);
                 return;
             }

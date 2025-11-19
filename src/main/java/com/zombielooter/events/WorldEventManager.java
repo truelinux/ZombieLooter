@@ -11,6 +11,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import cn.nukkit.utils.TextFormat;
 
 /**
  * WorldEventManager orchestrates dynamic nighttime events such as raids,
@@ -75,7 +76,7 @@ public class WorldEventManager {
         int max = cfg.getInt("events.raids.spawn_count.max", 10);
         plugin.getZombieSpawner().spawnHordesNearAll(min, max);
         for (Player p : level.getPlayers().values()) {
-            p.sendTitle("§4Raid Incoming!", "§7Defend yourself!", 10, 80, 10);
+            p.sendTitle(TextFormat.colorize('&', "&4Raid Incoming!"), TextFormat.colorize('&', "&7Defend yourself!"), 10, 80, 10);
             level.addSound(p, Sound.AMBIENT_CAVE);
         }
     }
@@ -116,7 +117,7 @@ public class WorldEventManager {
                 }
             }
         }
-        plugin.getServer().broadcastMessage("§6☄ A meteor crashed nearby! Investigate the impact site.");
+        plugin.getServer().broadcastMessage("&6☄ A meteor crashed nearby! Investigate the impact site.");
     }
 
     /**
@@ -127,9 +128,9 @@ public class WorldEventManager {
      */
     private void triggerOutbreak(Level level) {
         plugin.getInfectionManager().increase(30);
-        plugin.getServer().broadcastMessage("§4⚠ Infection outbreak! Infection levels rising rapidly.");
+        plugin.getServer().broadcastMessage("&4⚠ Infection outbreak! Infection levels rising rapidly.");
         for (Player p : level.getPlayers().values()) {
-            p.sendTitle("§cInfection Outbreak", "§7Stay alert!", 10, 80, 10);
+            p.sendTitle(TextFormat.colorize('&', "&cInfection Outbreak"), TextFormat.colorize('&', "&7Stay alert!"), 10, 80, 10);
         }
     }
 }

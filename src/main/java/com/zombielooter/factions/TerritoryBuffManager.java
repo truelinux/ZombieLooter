@@ -94,7 +94,7 @@ public class TerritoryBuffManager {
                     faction.depositToBank(tier.passiveIncome);
                 }
             }
-            plugin.getLogger().info("§aGranted passive income to all qualifying factions.");
+            plugin.getLogger().info("&aGranted passive income to all qualifying factions.");
         }, intervalTicks);
     }
 }

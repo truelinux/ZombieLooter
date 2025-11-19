@@ -30,7 +30,7 @@ public class AntiCheatBasic implements Listener {
             // soft mitigation: cancel occasionally
             if (delta < 45) {
                 e.setCancelled();
-                p.sendPopup("§cSwing too fast!");
+                p.sendPopup("&cSwing too fast!");
             }
         }
         lastHit.put(p.getUniqueId(), now);

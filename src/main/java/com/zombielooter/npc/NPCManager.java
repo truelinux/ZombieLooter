@@ -17,6 +17,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import cn.nukkit.utils.TextFormat;
 
 public class NPCManager {
 
@@ -50,7 +51,7 @@ public class NPCManager {
             );
             npcLocations.put(vendorId, loc);
         }
-        plugin.getLogger().info("§aLoaded " + npcLocations.size() + " persistent NPC locations.");
+        plugin.getLogger().info("&aLoaded " + npcLocations.size() + " persistent NPC locations.");
     }
 
     public void onChunkLoad(IChunk chunk) {
@@ -107,7 +108,7 @@ public class NPCManager {
     public void createAndSaveNPC(Player player, String vendorId) {
         Vendor vendor = plugin.getVendorManager().getVendor(vendorId);
         if (vendor == null) {
-            player.sendMessage("§cVendor ID '" + vendorId + "' not found in vendors.yml.");
+            player.sendMessage(TextFormat.colorize('&', "&cVendor ID '" + vendorId + "' not found in vendors.yml."));
             return;
         }
 
@@ -125,7 +126,7 @@ public class NPCManager {
 
         npcLocations.put(vendorId, location); // Update in-memory location
         spawnNpc(vendorId, location);
-        player.sendMessage("§aSpawned and saved vendor '" + vendor.getName() + "' at your location.");
+        player.sendMessage(TextFormat.colorize('&', "&aSpawned and saved vendor '" + vendor.getName() + "' at your location."));
     }
 
     private void despawnNpc(String vendorId, Level level) {

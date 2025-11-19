@@ -15,13 +15,13 @@ public class ClaimGUI {
     public static void openMainMenu(ZombieLooterX plugin, Player player) {
         Faction f = plugin.getFactionManager().getFactionByPlayer(player.getUniqueId());
         if (f == null) {
-            player.sendPopup("§cNot in a faction.");
+            player.sendPopup("&cNot in a faction.");
             return;
         }
         ModalForm form = new ModalForm("Claim Land", "Do you want to claim and flatten this chunk?\nCosts 1 power point.")
-                .text("§aConfirm", "§cCancel")
+                .text("&aConfirm", "&cCancel")
                 .onYes(p -> plugin.getServer().executeCommand(p, "f claim confirm"))
-                .onNo(p -> player.sendPopup("§7Claim cancelled."));
+                .onNo(p -> player.sendPopup("&7Claim cancelled."));
         form.send(player);
     }
 }

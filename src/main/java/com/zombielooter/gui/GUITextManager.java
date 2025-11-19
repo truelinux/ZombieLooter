@@ -1,9 +1,11 @@
 package com.zombielooter.gui;
 
 import cn.nukkit.utils.Config;
+import cn.nukkit.utils.TextFormat;
 import com.zombielooter.ZombieLooterX;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class GUITextManager {
@@ -18,25 +20,34 @@ public class GUITextManager {
     }
 
     public String getTitle(String key) {
-        return "§l" + config.getString("gui." + key + ".title", "§lMenu");
+        return colorize("&l" + config.getString("gui." + key + ".title", "&lMenu"));
     }
 
     public String getDescription(String key) {
-        return config.getString("gui." + key + ".description", "§7No description.");
+        return colorize(config.getString("gui." + key + ".description", "&7No description."));
     }
 
     @SuppressWarnings("unchecked")
     public List<String> getButtons(String key) {
-        return (List<String>) config.getList("gui." + key + ".buttons");
+        List<String> raw = (List<String>) config.getList("gui." + key + ".buttons");
+        if (raw == null) return null;
+        List<String> colored = new ArrayList<>(raw.size());
+        for (String s : raw) {
+            colored.add(colorize(s));
+        }
+        return colored;
     }
 
     public String getText(String key, String defaultValue) {
-        return config.getString("gui." + key, defaultValue);
+        return colorize(config.getString("gui." + key, defaultValue));
     }
 
     public String get(String key, String defaultValue) {
-        return config.getString(key, defaultValue);
+        return colorize(config.getString(key, defaultValue));
     }
 
-
+    private String colorize(String value) {
+        if (value == null) return null;
+        return TextFormat.colorize('&', value.replace("\u0015", "&").replace("§", "&"));
+    }
 }

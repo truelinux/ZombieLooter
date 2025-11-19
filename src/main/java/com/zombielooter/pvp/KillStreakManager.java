@@ -40,7 +40,7 @@ public class KillStreakManager implements Listener {
             if (streak % 5 == 0) {
                 int bounty = streak * 10;
                 bounties.put(killer.getUniqueId(), bounty);
-                plugin.getServer().broadcastMessage("§6Killstreak! " + killer.getName() +
+                plugin.getServer().broadcastMessage("&6Killstreak! " + killer.getName() +
                         " is on " + streak + " kills. Bounty: " + bounty + " coins.");
             }
         }
@@ -71,7 +71,7 @@ public class KillStreakManager implements Listener {
         if (bounty > 0) {
             plugin.getEconomyManager().addBalance(hunter.getUniqueId(), bounty);
             bounties.remove(target.getUniqueId());
-            hunter.sendPopup("§aBounty claimed: " + bounty + " coins!");
+            hunter.sendPopup("&aBounty claimed: " + bounty + " coins!");
         }
     }
 }

@@ -18,7 +18,7 @@ public class DailyRewardsCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(TextFormat.RED + "Players only.");
+            sender.sendMessage(TextFormat.colorize('&', TextFormat.RED + "Players only."));
             return true;
         }
 

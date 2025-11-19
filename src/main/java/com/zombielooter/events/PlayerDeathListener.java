@@ -16,6 +16,7 @@ import com.zombielooter.xp.XPManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import cn.nukkit.utils.TextFormat;
 
 public class PlayerDeathListener implements Listener {
 
@@ -53,9 +54,8 @@ public class PlayerDeathListener implements Listener {
             raidManager.updateFactionRaidableStatus(deceasedFaction);
             deceasedFaction.getMembers().forEach(memberUUID -> 
                 plugin.getServer().getPlayer(memberUUID).ifPresent(member -> 
-                    member.sendMessage("§cYour faction lost power because " + deceased.getName() + " died!")
-                )
-            );
+                    member.sendMessage(TextFormat.colorize('&', "&cYour faction lost power because " + deceased.getName() + " died!")
+                )));
         }
 
         if (killerFaction != null && !killerFaction.equals(deceasedFaction)) {
@@ -63,9 +63,8 @@ public class PlayerDeathListener implements Listener {
             raidManager.updateFactionRaidableStatus(killerFaction);
             killerFaction.getMembers().forEach(memberUUID -> 
                 plugin.getServer().getPlayer(memberUUID).ifPresent(member -> 
-                    member.sendMessage("§aYour faction gained power because " + killer.getName() + " killed an enemy!")
-                )
-            );
+                    member.sendMessage(TextFormat.colorize('&', "&aYour faction gained power because " + killer.getName() + " killed an enemy!")
+                )));
         }
 
         // --- Player Death Loot Logic ---

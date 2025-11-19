@@ -5,6 +5,7 @@ import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandExecutor;
 import cn.nukkit.command.CommandSender;
 import com.zombielooter.ZombieLooterX;
+import cn.nukkit.utils.TextFormat;
 
 public class MailCommand implements CommandExecutor {
     private final ZombieLooterX plugin;
@@ -18,22 +19,22 @@ public class MailCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("§cPlayers only.");
+            sender.sendMessage(TextFormat.colorize('&', "&cPlayers only."));
             return true;
         }
 
         if (args.length == 0 || args[0].equalsIgnoreCase("view")) {
             int i = 0;
             for (MailManager.MailEntry entry : mailManager.viewInbox(player.getUniqueId())) {
-                player.sendMessage("§7#" + i + " §f" + entry.amount + "x " + entry.itemId);
+                player.sendMessage(TextFormat.colorize('&', "&7#" + i + " &f" + entry.amount + "x " + entry.itemId));
                 i++;
             }
             int overflow = mailManager.getOverflowCount(player.getUniqueId());
             if (overflow > 0) {
-                player.sendMessage("§e+" + overflow + " more queued (inbox full). Claim items to reveal.");
+                player.sendMessage(TextFormat.colorize('&', "&e+" + overflow + " more queued (inbox full). Claim items to reveal."));
             }
             if (i == 0) {
-                player.sendMessage("§7Your mail is empty.");
+                player.sendMessage(TextFormat.colorize('&', "&7Your mail is empty."));
             }
             return true;
         }
@@ -47,12 +48,12 @@ public class MailCommand implements CommandExecutor {
                 int idx = Integer.parseInt(args[1]);
                 mailManager.claimSingle(player, idx);
             } catch (NumberFormatException e) {
-                player.sendMessage("§cUsage: /mail claim <index|all>");
+                player.sendMessage(TextFormat.colorize('&', "&cUsage: /mail claim <index|all>"));
             }
             return true;
         }
 
-        player.sendMessage("§cUsage: /mail [view|claim <index|all>]");
+        player.sendMessage(TextFormat.colorize('&', "&cUsage: /mail [view|claim <index|all>]"));
         return true;
     }
 }

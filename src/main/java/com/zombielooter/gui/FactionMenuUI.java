@@ -13,6 +13,7 @@ import com.zombielooter.factions.Faction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import cn.nukkit.utils.TextFormat;
 
 public final class FactionMenuUI {
 
@@ -76,7 +77,7 @@ public final class FactionMenuUI {
         GUITextManager text = plugin.getGUITextManager();
         SimpleForm form = new SimpleForm(
             text.getTitle("faction_bank"),
-            "§7Current Balance: §e" + String.format("%.2f", faction.getBankBalance()) + " coins"
+            "&7Current Balance: &e" + String.format("%.2f", faction.getBankBalance()) + " coins"
         );
         for (String button : text.getButtons("faction_bank")) {
             form.addButton(button);
@@ -111,7 +112,7 @@ public final class FactionMenuUI {
             .collect(Collectors.toList());
 
         if (memberNames.isEmpty()) {
-            player.sendMessage("§cThere are no other members to kick.");
+            player.sendMessage(TextFormat.colorize('&', "&cThere are no other members to kick."));
             return;
         }
 
@@ -130,7 +131,7 @@ public final class FactionMenuUI {
         }
 
         if (invites.isEmpty()) {
-            player.sendMessage("§cYou have no pending faction invitations.");
+            player.sendMessage(TextFormat.colorize('&', "&cYou have no pending faction invitations."));
             return;
         }
 
@@ -142,7 +143,7 @@ public final class FactionMenuUI {
     public static void openDepositForm(Player player) {
         GUITextManager text = plugin.getGUITextManager();
         if (plugin.getEconomyManager().getBalance(player.getUniqueId()) <= 0) {
-            player.sendMessage(text.getText("feedback.no_money_to_deposit", "§cYou have no money to deposit."));
+            player.sendMessage(TextFormat.colorize('&', text.getText("feedback.no_money_to_deposit", "&cYou have no money to deposit.")));
             return;
         }
         CustomForm form = new CustomForm(text.getText("form_deposit.title", "Deposit to Bank"));

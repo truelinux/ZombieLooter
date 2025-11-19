@@ -8,6 +8,7 @@ import cn.nukkit.level.ParticleEffect;
 import cn.nukkit.level.Sound;
 import com.zombielooter.ZombieLooterX;
 import com.zombielooter.gui.GUITextManager;
+import cn.nukkit.utils.TextFormat;
 
 public class ZombieCommand implements CommandExecutor {
 
@@ -22,19 +23,19 @@ public class ZombieCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!sender.hasPermission("zombielooter.admin")) {
-            sender.sendMessage(textManager.getText("commands.zombie.no_permission", "§cYou don't have permission to use this command."));
+            sender.sendMessage(TextFormat.colorize('&', textManager.getText("commands.zombie.no_permission", "&cYou don't have permission to use this command.")));
             return true;
         }
 
         if (args.length == 0) {
-            sender.sendMessage(textManager.getText("commands.zombie.usage", "§eUsage: /zlx <reload|spawn|npc>"));
+            sender.sendMessage(TextFormat.colorize('&', textManager.getText("commands.zombie.usage", "&eUsage: /zlx <reload|spawn|npc>")));
             return true;
         }
 
         switch (args[0].toLowerCase()) {
             case "reload":
                 plugin.getZombieSpawner().reloadConfigCommand(sender);
-                sender.sendMessage(textManager.getText("commands.zombie.reload_success", "§aConfiguration reloaded successfully!"));
+                sender.sendMessage(TextFormat.colorize('&', textManager.getText("commands.zombie.reload_success", "&aConfiguration reloaded successfully!")));
                 return true;
 
             case "spawn":
@@ -43,18 +44,18 @@ public class ZombieCommand implements CommandExecutor {
 
             case "npc":
                 if (args.length < 3 || !args[1].equalsIgnoreCase("spawn")) {
-                    sender.sendMessage("§eUsage: /zlx npc spawn <vendorId>");
+                    sender.sendMessage(TextFormat.colorize('&', "&eUsage: /zlx npc spawn <vendorId>"));
                     return true;
                 }
                 if (!(sender instanceof Player)) {
-                    sender.sendMessage("§cThis command can only be used by a player.");
+                    sender.sendMessage(TextFormat.colorize('&', "&cThis command can only be used by a player."));
                     return true;
                 }
                 plugin.getNpcManager().createAndSaveNPC((Player) sender, args[2]);
                 return true;
 
             default:
-                sender.sendMessage(textManager.getText("commands.zombie.unknown_subcommand", "§cUnknown subcommand. Use /zlx <reload|spawn|npc>"));
+                sender.sendMessage(TextFormat.colorize('&', textManager.getText("commands.zombie.unknown_subcommand", "&cUnknown subcommand. Use /zlx <reload|spawn|npc>")));
                 return true;
         }
     }

@@ -13,6 +13,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import cn.nukkit.utils.TextFormat;
 
 public class RaidManager {
 
@@ -53,7 +54,7 @@ public class RaidManager {
 
         this.bannerDefenseDuration = raidConfig.getInt("banner-defense-duration", 300);
         this.bannerItemId = raidConfig.getString("banner-item-id", "minecraft:banner");
-        this.bannerItemName = raidConfig.getString("banner-item-name", "§c§lRaid Banner");
+        this.bannerItemName = raidConfig.getString("banner-item-name", "&c&lRaid Banner");
         this.bannerItemLore = raidConfig.getStringList("banner-item-lore").toArray(new String[0]);
         this.bannerCost = raidConfig.getInt("banner-cost", 5000);
 
@@ -82,17 +83,17 @@ public class RaidManager {
 
     public void startRaid(Player player, Faction attacker, Faction defender, Location bannerLocation) {
         if (activeRaid != null) {
-            player.sendMessage(text.getText("commands.raid.already_active", "§cThere is already an active raid in progress on the server!"));
+            player.sendMessage(TextFormat.colorize('&', text.getText("commands.raid.already_active", "&cThere is already an active raid in progress on the server!")));
             return;
         }
         if (!isFactionRaidable(defender.getName())) {
-            player.sendMessage(text.getText("commands.raid.not_raidable", "§cThis faction is no longer raidable."));
+            player.sendMessage(TextFormat.colorize('&', text.getText("commands.raid.not_raidable", "&cThis faction is no longer raidable.")));
             return;
         }
 
         activeRaid = new ActiveRaid(attacker, defender, bannerLocation, bannerDefenseDuration);
-        plugin.getServer().broadcastMessage(String.format(text.getText("commands.raid.started_broadcast", "§c§lRAID STARTED: §e%s is attacking %s!"), attacker.getName(), defender.getName()));
-        plugin.getServer().broadcastMessage(String.format(text.getText("commands.raid.started_info", "§7Defend the banner for %d minutes to capture the territory!"), bannerDefenseDuration / 60));
+        plugin.getServer().broadcastMessage(String.format(text.getText("commands.raid.started_broadcast", "&c&lRAID STARTED: &e%s is attacking %s!"), attacker.getName(), defender.getName()));
+        plugin.getServer().broadcastMessage(String.format(text.getText("commands.raid.started_info", "&7Defend the banner for %d minutes to capture the territory!"), bannerDefenseDuration / 60));
     }
 
     public void endRaid(boolean attackerWon) {
@@ -100,9 +101,9 @@ public class RaidManager {
 
         if (attackerWon) {
             plugin.getClaimManager().forceClaimChunk(activeRaid.attacker, activeRaid.bannerLocation.getChunkX(), activeRaid.bannerLocation.getChunkZ());
-            plugin.getServer().broadcastMessage(String.format(text.getText("commands.raid.ended_success_broadcast", "§c§lRAID ENDED: §e%s has successfully captured the territory from %s!"), activeRaid.attacker.getName(), activeRaid.defender.getName()));
+            plugin.getServer().broadcastMessage(String.format(text.getText("commands.raid.ended_success_broadcast", "&c&lRAID ENDED: &e%s has successfully captured the territory from %s!"), activeRaid.attacker.getName(), activeRaid.defender.getName()));
         } else {
-            plugin.getServer().broadcastMessage(String.format(text.getText("commands.raid.ended_fail_broadcast", "§a§lRAID FAILED: §e%s has successfully defended their territory!"), activeRaid.defender.getName()));
+            plugin.getServer().broadcastMessage(String.format(text.getText("commands.raid.ended_fail_broadcast", "&a&lRAID FAILED: &e%s has successfully defended their territory!"), activeRaid.defender.getName()));
         }
         
         activeRaid.bannerLocation.getLevel().setBlock(activeRaid.bannerLocation, Block.get(Block.AIR));
@@ -120,7 +121,7 @@ public class RaidManager {
                 return;
             }
 
-            String message = String.format(text.getText("commands.raid.timer_title", "§c§lRAID IN PROGRESS: §e%ds"), remainingSeconds);
+            String message = String.format(text.getText("commands.raid.timer_title", "&c&lRAID IN PROGRESS: &e%ds"), remainingSeconds);
             for (UUID uuid : activeRaid.attacker.getMembers()) {
                 plugin.getServer().getPlayer(uuid).ifPresent(p -> p.sendTitle(message));
             }
@@ -142,12 +143,12 @@ public class RaidManager {
         if (faction.getPower() < raidableThreshold) {
             long raidEndTime = System.currentTimeMillis() + (plugin.getPowerManager().getRaidWindowMinutes() * 60 * 1000);
             if (!isFactionRaidable(faction.getName())) {
-                plugin.getServer().broadcastMessage(String.format(text.getText("commands.raid.raidable_alert", "§c§lRAID ALERT: §e%s is now raidable for the next %d minutes!"), faction.getName(), plugin.getPowerManager().getRaidWindowMinutes()));
+                plugin.getServer().broadcastMessage(String.format(text.getText("commands.raid.raidable_alert", "&c&lRAID ALERT: &e%s is now raidable for the next %d minutes!"), faction.getName(), plugin.getPowerManager().getRaidWindowMinutes()));
             }
             raidableFactions.put(faction.getName(), raidEndTime);
         } else {
             if (raidableFactions.remove(faction.getName()) != null) {
-                plugin.getServer().broadcastMessage(String.format(text.getText("commands.raid.secured_alert", "§a§lSECURED: §e%s is no longer raidable."), faction.getName()));
+                plugin.getServer().broadcastMessage(String.format(text.getText("commands.raid.secured_alert", "&a&lSECURED: &e%s is no longer raidable."), faction.getName()));
             }
         }
     }
