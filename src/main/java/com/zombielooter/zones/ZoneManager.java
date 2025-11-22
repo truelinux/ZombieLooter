@@ -89,26 +89,96 @@ public class ZoneManager {
 
     public boolean isSafe(Location loc) {
         Region r = getRegionAt(loc);
-        return r != null && r.getFlag("safe", false);
+        return r != null && r.getFlag(Region.FLAG_SAFE, false);
     }
 
     public boolean isPvP(Location loc) {
         Region r = getRegionAt(loc);
         if (r == null) return false;
-        if (r.getFlag("safe", false)) return false;
-        return r.getFlag("pvp", false);
+        if (r.getFlag(Region.FLAG_SAFE, false)) return false;
+        return r.getFlag(Region.FLAG_PVP, false);
     }
 
     public boolean canBuild(Location loc) {
         Region r = getRegionAt(loc);
         if (r == null) return true; // allow building outside regions
-        return r.getFlag("build", true); // allow inside regions unless build:false
+        return r.getFlag(Region.FLAG_BUILD, true); // allow inside regions unless build:false
     }
 
 
     public boolean allowMobSpawn(Location loc) {
         Region r = getRegionAt(loc);
-        return r == null || r.getFlag("mobspawn", true);
+        return r == null || r.getFlag(Region.FLAG_MOBSPAWN, true);
+    }
+
+    /**
+     * Updates a region corner in zones.yml to the player's current location (block-aligned).
+     * Creates the region with default flags if it does not exist yet.
+     *
+     * @param regionName name of the region to update or create
+     * @param loc        player location to capture (must include level)
+     * @param corner     "p1" or "p2"
+     * @return true if saved and reloaded successfully, false otherwise
+     */
+    public synchronized boolean setRegionCorner(String regionName, Location loc, String corner) {
+        if (zonesConfig == null || regionName == null || loc == null || loc.getLevel() == null) return false;
+
+        String normalized = corner == null ? "" : corner.toLowerCase(Locale.ROOT);
+        if (!normalized.equals("p1") && !normalized.equals("p2")) return false;
+
+        try {
+            List<Object> regionsList = new ArrayList<>(zonesConfig.getList("regions", new ArrayList<>()));
+            Map<String, Object> target = null;
+
+            for (int i = 0; i < regionsList.size(); i++) {
+                Object o = regionsList.get(i);
+                if (o instanceof Map) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> map = new LinkedHashMap<>((Map<String, Object>) o);
+                    if (regionName.equalsIgnoreCase(String.valueOf(map.get("name")))) {
+                        target = map;
+                        regionsList.set(i, target);
+                        break;
+                    }
+                }
+            }
+
+            if (target == null) {
+                target = new LinkedHashMap<>();
+                target.put("name", regionName);
+                target.put("level", loc.getLevel().getName());
+                target.put("p1", pointFromLocation(loc));
+                target.put("p2", pointFromLocation(loc));
+
+                Map<String, Boolean> defaults = new LinkedHashMap<>();
+                defaults.put(Region.FLAG_SAFE, false);
+                defaults.put(Region.FLAG_PVP, false);
+                defaults.put(Region.FLAG_BUILD, false);
+                defaults.put(Region.FLAG_MOBSPAWN, true);
+                target.put("flags", defaults);
+
+                regionsList.add(target);
+            }
+
+            target.put("level", loc.getLevel().getName());
+            target.put(normalized, pointFromLocation(loc));
+
+            zonesConfig.set("regions", regionsList);
+            zonesConfig.save();
+            load(); // refresh in-memory regions
+            return true;
+        } catch (Exception ex) {
+            plugin.getLogger().error("Failed to save region corner: " + ex.getMessage());
+            return false;
+        }
+    }
+
+    private Map<String, Object> pointFromLocation(Location loc) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("x", loc.getFloorX());
+        map.put("y", loc.getFloorY());
+        map.put("z", loc.getFloorZ());
+        return map;
     }
 
     public void reload() {

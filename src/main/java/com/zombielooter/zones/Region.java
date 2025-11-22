@@ -6,6 +6,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Region {
+    public static final String FLAG_SAFE = "safe";
+    public static final String FLAG_PVP = "pvp";
+    public static final String FLAG_BUILD = "build";
+    public static final String FLAG_MOBSPAWN = "mobspawn";
+
     private final String name;
     private final String levelName;
     private final Vector3 min;
@@ -23,10 +28,10 @@ public class Region {
         double maxZ = Math.max(p1.getZ(), p2.getZ());
         this.min = new Vector3(minX, minY, minZ);
         this.max = new Vector3(maxX, maxY, maxZ);
-        flags.put("safe", false);
-        flags.put("pvp", false);
-        flags.put("build", false);
-        flags.put("mobspawn", true);
+        flags.put(FLAG_SAFE, false);
+        flags.put(FLAG_PVP, false);
+        flags.put(FLAG_BUILD, false);
+        flags.put(FLAG_MOBSPAWN, true);
         if (initialFlags != null) {
             for (Map.Entry<String, Boolean> e : initialFlags.entrySet()) {
                 flags.put(e.getKey().toLowerCase(), e.getValue());
@@ -46,4 +51,5 @@ public class Region {
     public String getLevelName() { return levelName; }
     public Vector3 getMin() { return min; }
     public Vector3 getMax() { return max; }
+    public Map<String, Boolean> getFlags() { return new HashMap<>(flags); }
 }
