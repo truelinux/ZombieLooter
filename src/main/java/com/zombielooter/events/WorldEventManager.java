@@ -87,7 +87,6 @@ public class WorldEventManager {
      *
      * @param level world
      */
-    @SuppressWarnings("unchecked")
     private void dropMeteor(Level level) {
         int radius = cfg.getInt("events.meteor.spawn_radius", 100);
         Location spawn = level.getSpawnLocation().getLocation();

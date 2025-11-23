@@ -45,3 +45,9 @@ build/
 /compile.py
 /BaseGUI.java
 /apply.py
+BaseInventory.javap
+cp.txt
+FakeInventory.javap
+Item.javap
+temp.jsh
+logs/server.log

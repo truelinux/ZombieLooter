@@ -52,7 +52,6 @@ public class BossEventManager {
 
             for (Object obj : rawList) {
                 if (!(obj instanceof Map)) continue;
-                @SuppressWarnings("unchecked")
                 Map<String, Object> data = (Map<String, Object>) obj;
 
                 String id = String.valueOf(data.getOrDefault("id", UUID.randomUUID().toString()));

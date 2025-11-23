@@ -1,1 +1,3 @@
+fake_listings:
+  max: 6
 listings: []

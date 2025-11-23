@@ -5,9 +5,11 @@ import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.player.PlayerFormRespondedEvent;
 import cn.nukkit.form.response.CustomResponse;
+import cn.nukkit.form.response.ElementResponse;
 import cn.nukkit.form.response.SimpleResponse;
 import cn.nukkit.form.window.CustomForm;
 import cn.nukkit.form.window.SimpleForm;
+import cn.nukkit.item.Item;
 import com.zombielooter.ZombieLooterX;
 import com.zombielooter.economy.Vendor;
 
@@ -16,6 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import cn.nukkit.utils.TextFormat;
 
 public class GUIFormListener implements Listener {
 
@@ -132,6 +135,8 @@ public class GUIFormListener implements Listener {
                         VendorMenuUI.handleSellMenu(plugin, player, vendorId, itemIndex, amount);
                     }
                 }
+            } else if (title.equals(text.get("gui.form_market_create.title", "Create Market Listing"))) {
+                handleMarketListingForm(player, response, text);
             }
         }
     }
@@ -153,6 +158,57 @@ public class GUIFormListener implements Listener {
             case 0: FactionMenuUI.openCreateFactionForm(player); break;
             case 1: plugin.getServer().executeCommand(player, "f list"); break;
             case 2: FactionMenuUI.openAcceptInviteForm(player); break;
+        }
+    }
+
+    private void handleMarketListingForm(Player player, CustomResponse response, GUITextManager text) {
+        Item hand = player.getInventory().getItemInHand();
+        if (hand == null || hand.getId() == Item.AIR.getId()) {
+            player.sendMessage(TextFormat.colorize('&', text.get("gui.form_market_create.missing_item", "&cHold the item you want to list.")));
+            return;
+        }
+        int typeIndex = 0;
+        try {
+            ElementResponse dropdown = response.getDropdownResponse(1);
+            if (dropdown == null) {
+                dropdown = response.getDropdownResponse(0);
+            }
+            if (dropdown != null) {
+                typeIndex = dropdown.elementId();
+            }
+        } catch (Exception ignored) {}
+        float rawAmount = 1;
+        try {
+            rawAmount = response.getSliderResponse(2);
+        } catch (Exception ignored) {
+            try { rawAmount = response.getSliderResponse(1); } catch (Exception ignoredAgain) {}
+        }
+        int amount = Math.max(1, Math.round(rawAmount));
+        String priceInput;
+        try {
+            priceInput = response.getInputResponse(3);
+        } catch (Exception ignored) {
+            priceInput = response.getInputResponse(2);
+        }
+        int price;
+        try {
+            price = Integer.parseInt(priceInput == null ? "" : priceInput.trim());
+        } catch (Exception e) {
+            player.sendMessage(TextFormat.colorize('&', text.get("gui.form_market_create.invalid_price", "&cEnter a valid whole number price.")));
+            return;
+        }
+        if (price <= 0) {
+            player.sendMessage(TextFormat.colorize('&', text.get("gui.form_market_create.invalid_price", "&cEnter a valid whole number price.")));
+            return;
+        }
+        if (typeIndex == 0) {
+            boolean success = plugin.getMarketManager().listFromHand(player, amount, price);
+            String messageKey = success ? "gui.form_market_create.sell_success" : "gui.form_market_create.sell_fail";
+            player.sendMessage(TextFormat.colorize('&', text.get(messageKey, success ? "&aListing posted." : "&cYou don't have that many items.")));
+        } else {
+            boolean success = plugin.getMarketManager().listBuyFromHand(player, amount, price);
+            String messageKey = success ? "gui.form_market_create.buy_success" : "gui.form_market_create.buy_fail";
+            player.sendMessage(TextFormat.colorize('&', text.get(messageKey, success ? "&aBuy order posted." : "&cCould not create that buy order.")));
         }
     }
 }

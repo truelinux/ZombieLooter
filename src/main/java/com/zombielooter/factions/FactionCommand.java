@@ -6,6 +6,7 @@ import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandExecutor;
 import cn.nukkit.command.CommandSender;
 import com.zombielooter.ZombieLooterX;
+import com.zombielooter.gui.ClaimGUI;
 import com.zombielooter.gui.FactionMenuUI;
 import com.zombielooter.gui.GUITextManager;
 import com.zombielooter.gui.HUDManager;
@@ -312,8 +313,48 @@ public class FactionCommand implements CommandExecutor {
                         player.sendMessage(TextFormat.colorize('&', text.get("commands.faction.withdraw_fail_money", "&cThe faction bank does not have enough money.")));
                     }
                 } catch (NumberFormatException e) {
-                    player.sendMessage(TextFormat.colorize('&', text.get("commands.faction.invalid_amount", "&cInvalid amount specified.")));
+                        player.sendMessage(TextFormat.colorize('&', text.get("commands.faction.invalid_amount", "&cInvalid amount specified.")));
                 }
+                break;
+
+            case "claim":
+                if (playerFaction == null) {
+                    player.sendMessage(TextFormat.colorize('&', "&cYou must be in a faction to claim land."));
+                    return true;
+                }
+                if (!plugin.getWorldPortalManager().isWildWorld(player.getLevel())) {
+                    player.sendMessage(TextFormat.colorize('&', "&cClaims can only be made in wild worlds."));
+                    return true;
+                }
+                if (!playerFaction.getLeader().equals(uuid)) {
+                    player.sendMessage(TextFormat.colorize('&', "&cOnly faction leaders can claim land."));
+                    return true;
+                }
+                if (args.length == 1) {
+                    ClaimGUI.openMainMenu(plugin, player);
+                    return true;
+                }
+                if ("confirm".equalsIgnoreCase(args[1])) {
+                    plugin.getClaimManager().claimChunk(playerFaction, player);
+                    return true;
+                }
+                player.sendMessage(TextFormat.colorize('&', "&eUsage: /f claim [confirm]"));
+                break;
+
+            case "unclaim":
+                if (playerFaction == null) {
+                    player.sendMessage(TextFormat.colorize('&', "&cYou must be in a faction to unclaim land."));
+                    return true;
+                }
+                if (!plugin.getWorldPortalManager().isWildWorld(player.getLevel())) {
+                    player.sendMessage(TextFormat.colorize('&', "&cUnclaiming is only allowed in wild worlds."));
+                    return true;
+                }
+                if (!playerFaction.getLeader().equals(uuid)) {
+                    player.sendMessage(TextFormat.colorize('&', "&cOnly faction leaders can unclaim land."));
+                    return true;
+                }
+                plugin.getClaimManager().unclaimChunk(playerFaction, player);
                 break;
 
             default:

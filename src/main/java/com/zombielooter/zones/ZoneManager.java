@@ -32,23 +32,19 @@ public class ZoneManager {
                 for (Object obj : rawList) {
                     if (!(obj instanceof Map)) continue;
 
-                    @SuppressWarnings("unchecked")
                     Map<String, Object> entry = (Map<String, Object>) obj;
 
                     try {
                         String name = String.valueOf(entry.get("name"));
                         String level = String.valueOf(entry.get("level"));
 
-                        @SuppressWarnings("unchecked")
                         Map<String, Object> p1m = (Map<String, Object>) entry.get("p1");
 
-                        @SuppressWarnings("unchecked")
                         Map<String, Object> p2m = (Map<String, Object>) entry.get("p2");
 
                         Map<String, Boolean> flags = new HashMap<>();
                         Object flagsObj = entry.get("flags");
                         if (flagsObj instanceof Map) {
-                            @SuppressWarnings("unchecked")
                             Map<String, Object> flagsRaw = (Map<String, Object>) flagsObj;
                             for (Map.Entry<String, Object> fe : flagsRaw.entrySet()) {
                                 flags.put(fe.getKey().toLowerCase(Locale.ROOT), Boolean.TRUE.equals(fe.getValue()));
@@ -133,7 +129,6 @@ public class ZoneManager {
             for (int i = 0; i < regionsList.size(); i++) {
                 Object o = regionsList.get(i);
                 if (o instanceof Map) {
-                    @SuppressWarnings("unchecked")
                     Map<String, Object> map = new LinkedHashMap<>((Map<String, Object>) o);
                     if (regionName.equalsIgnoreCase(String.valueOf(map.get("name")))) {
                         target = map;

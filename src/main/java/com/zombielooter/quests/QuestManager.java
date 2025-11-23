@@ -59,7 +59,6 @@ public class QuestManager implements Listener {
         for (Object entry : rawList) {
             if (!(entry instanceof Map)) continue;
 
-            @SuppressWarnings("unchecked")
             Map<String, Object> qMap = (Map<String, Object>) entry;
 
             String id = String.valueOf(qMap.getOrDefault("id", UUID.randomUUID().toString()));
@@ -79,7 +78,6 @@ public class QuestManager implements Listener {
                 for (Object objEntry : (List<?>) objList) {
                     if (!(objEntry instanceof Map)) continue;
 
-                    @SuppressWarnings("unchecked")
                     Map<String, Object> oMap = (Map<String, Object>) objEntry;
                     String type = String.valueOf(oMap.getOrDefault("type", "none")).toLowerCase(Locale.ROOT);
 
@@ -115,7 +113,6 @@ public class QuestManager implements Listener {
      *       counters:
      *         <objective_id>: <count>
      */
-    @SuppressWarnings("unchecked")
     public void loadProgress() {
         CompletableFuture.runAsync(() -> {
             try {

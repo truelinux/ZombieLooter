@@ -1,7 +1,46 @@
 # Daily rewards configuration
-# Rewards scale up based on streak, capped to one week by default.
+# Rewards scale up based on streak. Each day can also define a weighted
+# spinning wheel (see the global `wheel` list) that is shown inside the fake inventory.
+# When the wheel is empty the fallback money/items below are used per streak.
 daily-rewards:
   streak-cap: 7
+  wheel:
+    - title: "&aSnack Pack"
+      icon: "minecraft:apple 1"
+      weight: 50
+      money: 125
+      items:
+        - "minecraft:apple 3"
+    - title: "&6Starter Coins"
+      icon: "minecraft:bread 1"
+      weight: 35
+      money: 200
+      items:
+        - "minecraft:bread 2"
+    - title: "&dShield Kit"
+      icon: "minecraft:shield 1"
+      weight: 20
+      money: 350
+      items:
+        - "minecraft:shield 1"
+    - title: "&bTool Cache"
+      icon: "minecraft:diamond_pickaxe 1"
+      weight: 15
+      money: 450
+      items:
+        - "minecraft:diamond_pickaxe 1"
+    - title: "&5Rare Crate"
+      icon: "minecraft:diamond 1"
+      weight: 12
+      money: 600
+      items:
+        - "minecraft:diamond 2"
+    - title: "&dMythic Prize"
+      icon: "minecraft:netherite_ingot 1"
+      weight: 8
+      money: 950
+      items:
+        - "minecraft:netherite_ingot 1"
   rewards:
     "1":
       money: 100
@@ -41,4 +80,9 @@ daily-rewards:
 
 messages:
   already_claimed: "&cYou have already claimed today's reward."
-  claimed: "&aClaimed your day {day} reward! &7(+{coins} coins)"
+  claimed: "&aDaily reward unlocked: &f{reward} &7(+{coins} coins)"
+  claimed_popup: "&eDay {day}&7: &f{reward} {detail}"
+  spinning: "&eSpinning the daily wheel..."
+  spin_in_progress: "&eYour daily wheel is already spinning!"
+  spin_already: "&cYou already used today's spin."
+  wheel_title: "&lDaily Spin"

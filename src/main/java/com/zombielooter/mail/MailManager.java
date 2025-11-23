@@ -2,6 +2,7 @@ package com.zombielooter.mail;
 
 import cn.nukkit.Player;
 import cn.nukkit.item.Item;
+import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.utils.Config;
 import com.zombielooter.ZombieLooterX;
 
@@ -17,13 +18,17 @@ public class MailManager {
 
     public static class MailEntry {
         public final String itemId;
+        public final int meta;
         public int amount;
         public final long createdAt;
+        public final String itemData;
 
-        public MailEntry(String itemId, int amount, long createdAt) {
+        public MailEntry(String itemId, int meta, int amount, long createdAt, String itemData) {
             this.itemId = itemId;
+            this.meta = meta;
             this.amount = amount;
             this.createdAt = createdAt;
+            this.itemData = itemData;
         }
     }
 
@@ -96,9 +101,12 @@ public class MailManager {
         return getMailbox(playerId).overflow.size();
     }
 
-    public void addMail(UUID recipient, String itemId, int amount) {
+    public void addMail(UUID recipient, Item item) {
+        if (item == null || item.getCount() <= 0) {
+            return;
+        }
         Mailbox box = getMailbox(recipient);
-        MailEntry entry = new MailEntry(itemId, amount, System.currentTimeMillis());
+        MailEntry entry = new MailEntry(itemKeyFromItem(item), item.getDamage(), item.getCount(), System.currentTimeMillis(), encodeItemData(item));
         if (box.inbox.size() < INBOX_LIMIT) {
             box.inbox.add(entry);
         } else {
@@ -147,11 +155,10 @@ public class MailManager {
     }
 
     private boolean deliver(Player player, MailEntry entry) {
-        Item item = Item.get(entry.itemId);
+        Item item = deserialize(entry);
         if (item == null) {
             return true; // skip invalid items
         }
-        item.setCount(entry.amount);
         Item[] leftover = player.getInventory().addItem(item);
         return leftover.length == 0;
     }
@@ -168,16 +175,61 @@ public class MailManager {
 
     private MailEntry mapToEntry(Map<String, Object> m) {
         String itemId = String.valueOf(m.get("item"));
+        int meta = ((Number) m.getOrDefault("meta", 0)).intValue();
         int amount = ((Number) m.getOrDefault("amount", 1)).intValue();
         long created = ((Number) m.getOrDefault("created", System.currentTimeMillis())).longValue();
-        return new MailEntry(itemId, amount, created);
+        String data = String.valueOf(m.getOrDefault("nbt", ""));
+        return new MailEntry(itemId, meta, amount, created, data);
     }
 
     private Map<String, Object> entryToMap(MailEntry e) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("item", e.itemId);
+        m.put("meta", e.meta);
         m.put("amount", e.amount);
         m.put("created", e.createdAt);
+        m.put("nbt", e.itemData == null ? "" : e.itemData);
         return m;
+    }
+
+    private Item deserialize(MailEntry entry) {
+        byte[] data = decodeItemData(entry.itemData);
+        Item item;
+        if (data != null && data.length > 0) {
+            item = Item.get(entry.itemId, entry.meta, entry.amount, data);
+        } else {
+            item = Item.get(entry.itemId, entry.meta, entry.amount);
+        }
+        return item;
+    }
+
+    private String encodeItemData(Item item) {
+        if (item == null) return "";
+        CompoundTag tag = item.getNamedTag();
+        if (tag == null) return "";
+        try {
+            byte[] data = item.writeCompoundTag(tag);
+            if (data == null || data.length == 0) return "";
+            return Base64.getEncoder().encodeToString(data);
+        } catch (Exception ignored) {
+            return "";
+        }
+    }
+
+    private byte[] decodeItemData(String encoded) {
+        if (encoded == null || encoded.isEmpty()) return null;
+        try {
+            return Base64.getDecoder().decode(encoded);
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
+    }
+
+    private String itemKeyFromItem(Item item) {
+        if (item == null) return "minecraft:air";
+        if (item.getIdentifier() != null) {
+            return item.getIdentifier().toString();
+        }
+        return String.valueOf(item.getId());
     }
 }

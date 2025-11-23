@@ -24,6 +24,8 @@ import com.zombielooter.events.PlayerEvents;
 import com.zombielooter.factions.*;
 import com.zombielooter.gui.GUIFormListener;
 import com.zombielooter.gui.GUITextManager;
+import com.zombielooter.world.WorldPortalListener;
+import com.zombielooter.world.WorldPortalManager;
 import com.zombielooter.market.MarketCommand;
 import com.zombielooter.market.MarketManager;
 import com.zombielooter.mail.MailCommand;
@@ -47,6 +49,7 @@ import com.zombielooter.zones.PvPListener;
 import com.zombielooter.zones.ZoneManager;
 import com.zombielooter.kitpvp.KitPvpManager;
 import com.zombielooter.kitpvp.KitPvpListener;
+import com.zombielooter.util.TipManager;
 import me.skh6075.pnx.graphicscore.placeholder.PlaceholderAPI;
 
 import cn.nukkit.utils.TextFormat;
@@ -88,6 +91,8 @@ public class ZombieLooterX extends PluginBase implements Listener {
     private KitPvpManager kitPvpManager;
     private DailyRewardManager dailyRewardManager;
     private MailManager mailManager;
+    private WorldPortalManager worldPortalManager;
+    private TipManager tipManager;
 
     private int marqueeTaskId = -1;
 
@@ -119,8 +124,8 @@ public class ZombieLooterX extends PluginBase implements Listener {
             hudManager       = new HUDManager();
 
             lootManager      = new LootManager(this);
-            zombieSpawner    = new ZombieSpawner(this, lootManager);
             zoneManager      = new ZoneManager(this);
+            zombieSpawner    = new ZombieSpawner(this, lootManager, zoneManager);
 
             xpManager        = new XPManager(this);
             economyManager   = new EconomyManager(this);
@@ -143,6 +148,8 @@ public class ZombieLooterX extends PluginBase implements Listener {
             leaderboardManager   = new LeaderboardManager(this);
             kitPvpManager        = new KitPvpManager(this);
             dailyRewardManager   = new DailyRewardManager(this);
+            worldPortalManager   = new WorldPortalManager(this);
+            tipManager           = new TipManager(this);
 
         } catch (Exception e) {
             getLogger().error("Failed to initialize ZombieLooterX!", e);
@@ -162,6 +169,8 @@ public class ZombieLooterX extends PluginBase implements Listener {
         getServer().getPluginManager().registerEvents(new NPCListener(this, npcManager), this);
         getServer().getPluginManager().registerEvents(new RaidListener(this), this);
         getServer().getPluginManager().registerEvents(new KitPvpListener(kitPvpManager), this);
+        getServer().getPluginManager().registerEvents(new WorldPortalListener(worldPortalManager), this);
+        getServer().getPluginManager().registerEvents(new ClaimLocatorListener(this), this);
 
         // ---- Register commands via setExecutor() ----
         tryRegisterCommand("zlx",     new ZombieCommand(this));
@@ -196,6 +205,8 @@ public class ZombieLooterX extends PluginBase implements Listener {
         saveResource("kitpvp.yml", false);
         saveResource("daily_rewards.yml", false);
         saveResource("mail.yml", false);
+        saveResource("tips.yml", false);
+        saveResource("worlds.yml", false);
 
         PlaceholderAPI.INSTANCE.register(new ZombielooterPlaceholderExtension());
 
@@ -239,7 +250,7 @@ public class ZombieLooterX extends PluginBase implements Listener {
         }
         for (Player p : getServer().getOnlinePlayers().values()) {
             DummyBossBar bossBar = p.getDummyBossBar(0);
-            bossBar.destroy();
+            if(bossBar != null) bossBar.destroy();
         }
     }
 
@@ -331,6 +342,11 @@ public class ZombieLooterX extends PluginBase implements Listener {
         stopHotbarMarquee();
         stopBossBarMarquee();
 
+        if (worldPortalManager != null) {
+            getServer().getOnlinePlayers().values()
+                    .forEach(worldPortalManager::snapshotPlayer);
+        }
+
         if (questManager != null) questManager.saveProgress();
         if (factionManager != null) factionManager.save();
         if (claimManager != null) claimManager.save();
@@ -338,6 +354,8 @@ public class ZombieLooterX extends PluginBase implements Listener {
         if (xpManager != null) xpManager.save();
         if (economyManager != null) economyManager.save();
         if (mailManager != null) mailManager.save();
+        if (worldPortalManager != null) worldPortalManager.saveAll();
+        if (tipManager != null) tipManager.stop();
 
         getLogger().info("💀 ZombieLooterX disabled.");
     }
@@ -380,7 +398,6 @@ public class ZombieLooterX extends PluginBase implements Listener {
     // ======================================================
 
     private void tryRegisterCommand(String name, Object executor) {
-        @SuppressWarnings("unchecked")
         PluginCommand<ZombieLooterX> cmd = (PluginCommand<ZombieLooterX>) getCommand(name);
         if (cmd != null) {
             if (executor instanceof cn.nukkit.command.CommandExecutor) {
@@ -422,6 +439,8 @@ public class ZombieLooterX extends PluginBase implements Listener {
     public LeaderboardManager getLeaderboardManager(){ return leaderboardManager; }
     public KitPvpManager getKitPvpManager()          { return kitPvpManager; }
     public DailyRewardManager getDailyRewardManager(){ return dailyRewardManager; }
+    public WorldPortalManager getWorldPortalManager(){ return worldPortalManager; }
+    public TipManager getTipManager()                { return tipManager; }
 
     public GUITextManager getGUITextManager() {return guiTextManager;}
 }

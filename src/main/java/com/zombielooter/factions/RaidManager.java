@@ -100,7 +100,11 @@ public class RaidManager {
         if (activeRaid == null) return;
 
         if (attackerWon) {
-            plugin.getClaimManager().forceClaimChunk(activeRaid.attacker, activeRaid.bannerLocation.getChunkX(), activeRaid.bannerLocation.getChunkZ());
+            plugin.getClaimManager().forceClaimChunk(
+                    activeRaid.attacker,
+                    activeRaid.bannerLocation.getLevel(),
+                    activeRaid.bannerLocation.getChunkX(),
+                    activeRaid.bannerLocation.getChunkZ());
             plugin.getServer().broadcastMessage(String.format(text.getText("commands.raid.ended_success_broadcast", "&c&lRAID ENDED: &e%s has successfully captured the territory from %s!"), activeRaid.attacker.getName(), activeRaid.defender.getName()));
         } else {
             plugin.getServer().broadcastMessage(String.format(text.getText("commands.raid.ended_fail_broadcast", "&a&lRAID FAILED: &e%s has successfully defended their territory!"), activeRaid.defender.getName()));

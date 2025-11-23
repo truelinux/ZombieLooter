@@ -167,6 +167,7 @@ public class WorldPortalManager {
             int z = (int) Math.round(Math.sin(angle) * distance);
             int bx = x + level.getSpawnLocation().getFloorX();
             int bz = z + level.getSpawnLocation().getFloorZ();
+            level.loadChunk(bx, bz);
             int y = level.getHighestBlockAt(bx, bz) + 2;
             if (y <= 0) continue;
             return new Location(bx + 0.5, y, bz + 0.5, level);

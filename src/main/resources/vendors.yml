@@ -130,3 +130,10 @@ vendors:
         name: "&6Sunstrike"
         sellPrice: 750
         buyPrice: 2000
+
+  market:
+    name: "&a&lMarketplace"
+    skin: "market_trader"
+    daily-buy-limit: 0
+    daily-sell-limit: 0
+    items: {}

@@ -33,7 +33,7 @@ public class RaidListener implements Listener {
         }
 
         // Prevent placing the banner in your own or unclaimed land
-        Faction defendingFaction = claimManager.getFactionForChunk(event.getBlock().getChunkX(), event.getBlock().getChunkZ());
+        Faction defendingFaction = claimManager.getFactionForChunk(event.getBlock().getLevel(), event.getBlock().getChunkX(), event.getBlock().getChunkZ());
         if (defendingFaction == null) {
             player.sendMessage(TextFormat.colorize('&', text.getText("commands.raid_listener.place_in_claimed_only", "&cYou can only place a raid banner in claimed territory.")));
             event.setCancelled(true);

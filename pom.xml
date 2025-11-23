@@ -55,6 +55,12 @@
             <version>24.0.0</version>
             <scope>provided</scope>
         </dependency>
+    
+      <dependency>
+        <groupId>org.powernukkit</groupId>
+        <artifactId>powernukkit</artifactId>
+        <version>1.4.0.0-PN-ALPHA.2</version>
+      </dependency>
     </dependencies>
 
     <build>

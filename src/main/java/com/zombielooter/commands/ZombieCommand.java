@@ -94,8 +94,31 @@ public class ZombieCommand implements CommandExecutor {
                 }
                 return true;
 
+            case "locator":
+                if (!(sender instanceof Player) && args.length < 2) {
+                    sender.sendMessage(TextFormat.colorize('&', "&cUsage: /zlx locator <player> [amount]"));
+                    return true;
+                }
+                Player giveTarget = (args.length >= 2) ? plugin.getServer().getPlayer(args[1]) : (Player) sender;
+                if (giveTarget == null) {
+                    sender.sendMessage(TextFormat.colorize('&', "&cPlayer not found."));
+                    return true;
+                }
+                int amount = 1;
+                if (args.length >= 3) {
+                    try {
+                        amount = Math.max(1, Integer.parseInt(args[2]));
+                    } catch (NumberFormatException ignored) {}
+                }
+                giveTarget.getInventory().addItem(com.zombielooter.factions.ClaimLocatorListener.createLocatorItem(amount));
+                giveTarget.sendMessage(TextFormat.colorize('&', "&dYou received a Claim Seeker."));
+                if (!giveTarget.equals(sender)) {
+                    sender.sendMessage(TextFormat.colorize('&', "&aGiven &e" + amount + "x &dClaim Seeker &ato " + giveTarget.getName()));
+                }
+                return true;
+
             default:
-                sender.sendMessage(TextFormat.colorize('&', textManager.getText("commands.zombie.unknown_subcommand", "&cUnknown subcommand. Use /zlx <reload|spawn|npc|zonepos|zoneinfo>")));
+                sender.sendMessage(TextFormat.colorize('&', textManager.getText("commands.zombie.unknown_subcommand", "&cUnknown subcommand. Use /zlx <reload|spawn|npc|zonepos|zoneinfo|locator>")));
                 return true;
         }
     }

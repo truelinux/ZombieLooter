@@ -13,7 +13,7 @@ commands:
     permission: zombielooter.lootpreview
   zlx:
     description: Admin command for ZombieLooterX (reload configs, spawn hordes, etc.)
-    usage: /zlx <reload|spawn [count]>
+    usage: /zlx <reload|spawn [count]|npc|zonepos|zoneinfo|locator>
     permission: zombielooter.admin
   f:
     description: Faction commands (create/join/claim/home/unclaim/etc.)

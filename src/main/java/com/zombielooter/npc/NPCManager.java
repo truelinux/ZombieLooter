@@ -99,7 +99,7 @@ public class NPCManager {
         }
 
         npc.setSkin(skin);
-        npc.setNameTag(vendor.getName());
+        npc.setNameTag(TextFormat.colorize(vendor.getName()));
         npc.setNameTagVisible(true);
         npc.setNameTagAlwaysVisible(true);
         npc.spawnToAll();

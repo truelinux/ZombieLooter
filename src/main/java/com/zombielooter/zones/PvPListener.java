@@ -12,6 +12,7 @@ import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.player.PlayerMoveEvent;
 import com.zombielooter.ZombieLooterX;
 import com.zombielooter.factions.Faction;
+import com.zombielooter.gui.FeedbackUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,12 +49,19 @@ public class PvPListener implements Listener {
         Player damager = (Player) e.getDamager();
         Player victim = (Player) e.getEntity();
 
-        boolean pvpAllowed = zones.isPvP(victim.getLocation()) && zones.isPvP(damager.getLocation());
-        boolean safe = zones.isSafe(victim.getLocation()) || zones.isSafe(damager.getLocation());
-
-        if (!pvpAllowed || safe) {
+        boolean safeVictim = zones.isSafe(victim.getLocation());
+        boolean safeDamager = zones.isSafe(damager.getLocation());
+        if (safeVictim || safeDamager) {
             e.setCancelled();
-            damager.sendTip("&cPvP disabled in this zone.");
+            FeedbackUtil.toastError(damager,"&cCombat disabled in safe zone.");
+            return;
+        }
+
+        boolean pvpAllowed = zones.isPvP(victim.getLocation()) && zones.isPvP(damager.getLocation());
+
+        if (!pvpAllowed) {
+            e.setCancelled();
+            FeedbackUtil.toastError(damager,"&cPvP disabled in this zone.");
             return;
         }
 
@@ -61,18 +69,34 @@ public class PvPListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
+    public void onAnyDamage(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        boolean safeZone = zones.isSafe(player.getLocation());
+        if (!safeZone) return;
+
+        // Allow mob damage during infection outbreak in spawn world, but still block PvP.
+        boolean outbreakActive = plugin.getInfectionManager() != null && plugin.getInfectionManager().isOutbreakActive()
+                && plugin.getInfectionManager().isSpawnWorld(player.getLevel());
+        if (outbreakActive && !(event instanceof EntityDamageByEntityEvent dmg && dmg.getDamager() instanceof Player)) {
+            return;
+        }
+
+        event.setCancelled();
+    }
+
+    @EventHandler(ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
         Player p = event.getPlayer();
-        if (!zones.canBuild(event.getBlock().getLocation())) {
-            event.setCancelled(); p.sendTip("&cYou cannot build here.");
+        if (!zones.canBuild(event.getBlock().getLocation()) && !p.isOp()) {
+            event.setCancelled(); FeedbackUtil.toastError(p, "&cYou cannot build here.");
         }
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         Player p = event.getPlayer();
-        if (!zones.canBuild(event.getBlock().getLocation())) {
-            event.setCancelled(); p.sendTip("&cYou cannot break blocks here.");
+        if (!zones.canBuild(event.getBlock().getLocation()) && !p.isOp()) {
+            event.setCancelled(); FeedbackUtil.toastError(p, "&cYou cannot break blocks here.");
         }
     }
 
@@ -81,9 +105,9 @@ public class PvPListener implements Listener {
         Player p = event.getPlayer();
         if (zones.isSafe(p.getLocation())) {
             Block b = event.getBlock();
-            if (b != null && b.getId() == Block.ENDER_CHEST) {
+            if (b != null && b.getId() == Block.ENDER_CHEST && !p.isOp()) {
                 event.setCancelled();
-                p.sendTip("&7Ender chests are disabled in this area.");
+                FeedbackUtil.toastError(p, "&7Ender chests are disabled in this area.");
             }
         }
     }
@@ -105,16 +129,17 @@ public class PvPListener implements Listener {
         if ((last == null && currentRegionName != null) || (last != null && !last.equals(currentRegionName))) {
             lastRegion.put(p.getUniqueId(), currentRegionName);
             if (r == null) {
-                p.sendTitle(TextFormat.colorize('&', "&7Wilderness"), TextFormat.colorize('&', "&8Build: allowed  •  PvP: depends"), 10, 40, 10);
+                p.sendTitle(TextFormat.colorize('&', "&7Wilderness"), TextFormat.colorize('&', "&8Build: allowed  •  PvP: depends  •  Safe: off"), 10, 40, 10);
             } else {
                 String pvp = r.getFlag("pvp", false) ? "&cON" : "&aOFF";
-                String build = r.getFlag("build", true) ? "&aallowed" : "&cdenied";
-                p.sendTitle(TextFormat.colorize('&', "&6" + r.getName()), TextFormat.colorize('&', "&ePvP: " + pvp + " &7• &eBuild: " + build), 10, 40, 10);
+                String build = r.getFlag("build", true) ? "&aON" : "&cOFF";
+                String safe = r.getFlag("safe", false) ? "&aON" : "&cOFF";
+                p.sendTitle(TextFormat.colorize('&', "&6" + r.getName()), TextFormat.colorize('&', "&ePvP: " + pvp + " &7• &eBuild: " + build + " &7• &eSafe: " + safe), 10, 40, 10);
             }
         }
 
         // --- Faction Raid Warning Logic ---
-        Faction currentFaction = plugin.getClaimManager().getFactionForChunk(p.getChunkX(), p.getChunkZ());
+        Faction currentFaction = plugin.getClaimManager().getFactionForChunk(p.getLevel(), p.getChunkX(), p.getChunkZ());
         String currentFactionName = (currentFaction != null) ? currentFaction.getName() : "Wilderness";
         String lastFaction = lastFactionClaim.getOrDefault(p.getUniqueId(), "Wilderness");
 

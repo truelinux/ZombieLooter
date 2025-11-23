@@ -40,8 +40,11 @@ public class MarketCommand implements CommandExecutor {
                 player.sendMessage(TextFormat.colorize('&', textManager.getText("commands.market.usage_list", "&cUsage: /zmarket list <itemId> <amount> <price>")));
                 return true;
             }
-            plugin.getMarketManager().list(player, itemId, amount, price);
-            player.sendMessage(TextFormat.colorize('&', String.format(textManager.getText("commands.market.listed_item", "&aListed %d x %s for %d coins."), amount, itemId, price)));
+            if (plugin.getMarketManager().list(player, itemId, amount, price)) {
+                player.sendMessage(TextFormat.colorize('&', String.format(textManager.getText("commands.market.listed_item", "&aListed %d x %s for %d coins."), amount, itemId, price)));
+            } else {
+                player.sendMessage(TextFormat.colorize('&', textManager.getText("commands.market.could_not_list", "&cYou must hold that many items to list them.")));
+            }
             return true;
         }
         if (sub.equals("listbuy") && args.length >= 4) {
@@ -54,10 +57,12 @@ public class MarketCommand implements CommandExecutor {
                 player.sendMessage(TextFormat.colorize('&', "&cUsage: /zmarket listbuy <itemId> <amount> <price>"));
                 return true;
             }
+            String successMsg = textManager.getText("commands.market.buy_list_posted", "&aPosted buy order. Funds reserved until filled (max 6h).");
+            String failMsg = textManager.getText("commands.market.buy_list_failed", "&cCould not post that buy order.");
             if (plugin.getMarketManager().listBuy(player, itemId, amount, price)) {
-                player.sendMessage(TextFormat.colorize('&', "&aPosted buy order. Funds reserved until filled (max 6h)."));
+                player.sendMessage(TextFormat.colorize('&', successMsg));
             } else {
-                player.sendMessage(TextFormat.colorize('&', "&cNot enough funds to post that buy order."));
+                player.sendMessage(TextFormat.colorize('&', failMsg));
             }
             return true;
         }

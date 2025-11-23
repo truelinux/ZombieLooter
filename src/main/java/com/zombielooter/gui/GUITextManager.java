@@ -27,7 +27,6 @@ public class GUITextManager {
         return colorize(config.getString("gui." + key + ".description", "&7No description."));
     }
 
-    @SuppressWarnings("unchecked")
     public List<String> getButtons(String key) {
         List<String> raw = (List<String>) config.getList("gui." + key + ".buttons");
         if (raw == null) return null;

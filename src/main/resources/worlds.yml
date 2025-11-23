@@ -1,0 +1,29 @@
+spawn-world: DeadSpawn
+force-adventure-at-spawn: true
+
+# Configure which worlds are considered "wild". Players spawn far apart here and
+# claims/teleport portals may be restricted to these worlds.
+wild-worlds:
+  - name: DeadWild
+    min-distance: 512   # minimum distance from spawn for random landing
+    max-distance: 2048  # maximum distance from spawn for random landing
+
+# Portal pads/regions that move players between worlds.
+portals:
+  - id: deadspawn-to-deadwild
+    source:
+      world: DeadSpawn
+      x: 0
+      y: 65
+      z: 0
+      radius: 3.5
+    target-world: DeadWild
+
+  - id: deadwild-to-deadspawn
+    source:
+      world: DeadWild
+      x: 0
+      y: 65
+      z: 0
+      radius: 3.5
+    target-world: DeadSpawn

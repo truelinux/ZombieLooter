@@ -23,6 +23,19 @@ public class DailyRewardsCommand implements CommandExecutor {
         }
 
         Player player = (Player) sender;
+        if (args.length > 0) {
+            String sub = args[0].toLowerCase();
+            if (sub.equals("spin")) {
+                dailyRewardManager.spinDailyWheel(player);
+                return true;
+            }
+            if (sub.equals("reward")) {
+                dailyRewardManager.claimDailyReward(player);
+                return true;
+            }
+            player.sendMessage(TextFormat.colorize('&', "&eUsage: /" + label + " reward|spin"));
+            return true;
+        }
         dailyRewardManager.claimDailyReward(player);
         return true;
     }

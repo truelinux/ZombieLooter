@@ -18,6 +18,7 @@ import cn.nukkit.level.format.IChunk;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.scheduler.Task;
 import cn.nukkit.utils.Config;
+import com.zombielooter.zones.ZoneManager;
 
 import java.util.Random;
 import cn.nukkit.utils.TextFormat;
@@ -27,6 +28,25 @@ public class ZombieSpawner implements Listener {
     private final ZombieLooterX plugin;
     private final LootManager lootManager;
     private final Random random = new Random();
+    private final ZoneManager zoneManager;
+
+    /**
+     * Spawn a single zombie at an exact location without safety checks.
+     * Used by infection outbreaks to place zombies in controlled events.
+     */
+    public Entity spawnZombieDirect(Location loc, String name) {
+        if (loc == null || loc.getLevel() == null) return null;
+        Entity entity = Entity.createEntity(EntityID.ZOMBIE, loc);
+        if (entity instanceof EntityZombie zombie) {
+            if (name != null && !name.isEmpty()) {
+                zombie.setNameTagVisible(true);
+                zombie.setNameTag(name);
+            }
+            zombie.spawnToAll();
+            return zombie;
+        }
+        return entity;
+    }
 
     private double hordeSpawnChance;
     private int hordeMinDistance;
@@ -35,9 +55,10 @@ public class ZombieSpawner implements Listener {
     private int hordeSizeMax;
     private int checkInterval;
 
-    public ZombieSpawner(ZombieLooterX plugin, LootManager lootManager) {
+    public ZombieSpawner(ZombieLooterX plugin, LootManager lootManager, ZoneManager zoneManager) {
         this.plugin = plugin;
         this.lootManager = lootManager;
+        this.zoneManager = zoneManager;
 
         loadConfig();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -79,13 +100,14 @@ public class ZombieSpawner implements Listener {
                 for (Player player : plugin.getServer().getOnlinePlayers().values()) {
                     Level level = player.getLevel();
                     if (level == null) continue;
+                    if (!canSpawnAtPlayer(player)) continue;
 
                     long time = level.getTime() % 24000;
                     boolean isNight = (time >= 13000 && time <= 23000);
 
                     if (isNight && random.nextDouble() <= hordeSpawnChance) {
                         int hordeSize = hordeSizeMin + random.nextInt(Math.max(1, hordeSizeMax - hordeSizeMin + 1));
-                        spawnHordeRandom(level, player, hordeSize);
+                        spawnHordeRandom(level, player.getPosition(), hordeSize);
 
                         // Sound & particle feedback
                         level.addSound(player.getPosition(), Sound.MOB_ZOMBIE_SAY, 1, 1);
@@ -108,6 +130,8 @@ public class ZombieSpawner implements Listener {
         if (chunk == null || !chunk.isGenerated()) return;
 
         Location spawnLoc = new Location(position.getX(), position.getY(), position.getZ(), level);
+        if (zoneManager != null && !zoneManager.allowMobSpawn(spawnLoc)) return;
+
         Entity entity = Entity.createEntity(EntityID.ZOMBIE, spawnLoc);
 
         if (!(entity instanceof EntityZombie zombie)) return;
@@ -155,6 +179,7 @@ public class ZombieSpawner implements Listener {
         for (Player player : plugin.getServer().getOnlinePlayers().values()) {
             Level level = player.getLevel();
             if (level == null) continue;
+            if (!canSpawnAtPlayer(player)) continue;
 
             int hordeSize = minCount + random.nextInt(Math.max(1, maxCount - minCount + 1));
 
@@ -181,24 +206,47 @@ public class ZombieSpawner implements Listener {
      * Finds a safe spawn spot within configured range.
      */
     private Location findSafeSpot(Level level, Vector3 origin, int minDist, int maxDist) {
-        for (int i = 0; i < 20; i++) {
+        int attempts = 40;
+        int blockedByZone = 0;
+        int noAirSpace = 0;
+
+        for (int i = 0; i < attempts; i++) {
             double distance = minDist + random.nextDouble() * (maxDist - minDist);
             double angle = random.nextDouble() * 2 * Math.PI;
 
             double offsetX = Math.cos(angle) * distance;
             double offsetZ = Math.sin(angle) * distance;
-            int x = (int) (origin.getX() + offsetX);
-            int z = (int) (origin.getZ() + offsetZ);
+            int x = (int) Math.round(origin.getX() + offsetX);
+            int z = (int) Math.round(origin.getZ() + offsetZ);
             int y = level.getHighestBlockAt(x, z);
 
             Block ground = level.getBlock(x, y - 1, z);
-            Block air = level.getBlock(x, y, z);
+            Block head = level.getBlock(x, y, z);
+            Block above = level.getBlock(x, y + 1, z);
 
-            if (ground.isSolid() && air.getId().equals(Block.AIR)) {
-                return new Location(x + 0.5, y, z + 0.5, level);
+            boolean clearHead = head.getId() == Block.AIR;
+            boolean clearAbove = above.getId() == Block.AIR;
+
+            if (!clearHead || !clearAbove) {
+                noAirSpace++;
+                continue;
             }
+
+            Location candidate = new Location(x + 0.5, y, z + 0.5, level);
+            if (zoneManager != null && !zoneManager.allowMobSpawn(candidate)) {
+                blockedByZone++;
+                continue;
+            }
+            return candidate;
         }
+        plugin.getLogger().debug(String.format("Horde spawn failed near %s: zoneBlocks=%d, noGround=%d, noAir=%d (attempts=%d)",
+                origin.toString(), blockedByZone, noAirSpace, attempts));
         return null;
+    }
+
+    private boolean canSpawnAtPlayer(Player player) {
+        Location loc = player.getLocation();
+        return zoneManager == null || zoneManager.allowMobSpawn(loc);
     }
 
     /**

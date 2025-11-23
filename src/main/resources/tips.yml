@@ -1,0 +1,10 @@
+# Interval between tips in seconds
+interval-seconds: 240
+
+tips:
+  - "&eUse &a/quest &eto open the Quest UI and track your missions."
+  - "&eGrab daily coins with &a/dailyrewards&e to keep your streak alive."
+  - "&eSell and buy loot safely via the &aMarketplace NPC &eor &a/zmarket&e."
+  - "&eSet your faction home with &a/f sethome&e, then return using &a/f home&e."
+  - "&ePreview loot drops anytime with &a/lootpreview&e."
+  - "&eUse portals to reach wild worlds; your gear is saved separately per world."
